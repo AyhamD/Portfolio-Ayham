@@ -1,0 +1,91 @@
+name: dockercompose9886592395778733445
+services:
+  portfolio:
+    build:
+      context: C:\Users\se1c8x\project\PortfolioBackend\server
+      dockerfile: Dockerfile
+    image: portfolio
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 80
+        published: "8080"
+        protocol: tcp
+  portfoliobackend:
+    build:
+      context: C:\Users\se1c8x\project\PortfolioBackend
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: Debug
+        LAUNCHING_FROM_VS: "true"
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: PortfolioBackend
+    container_name: PortfolioBackend
+    entrypoint:
+      - C:\remote_debugger\x64\msvsmon.exe
+      - /noauth
+      - /anyuser
+      - /silent
+      - /nostatus
+      - /noclrwarn
+      - /nosecuritywarn
+      - /nofirewallwarn
+      - /nowowwarn
+      - /fallbackloadremotemanagedpdbs
+      - /timeout:2147483646
+      - /LogDebuggeeOutputToStdOut
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ASPNETCORE_HTTPS_PORTS: "8081"
+    labels:
+      com.microsoft.visual-studio.project-name: PortfolioBackend
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath c:\.nuget\packages  "C:\app\PortfolioBackend.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: dotnet --roll-forward Major C:\VSTools\DistrolessHelper\DistrolessHelper.dll --stop dotnet
+      com.microsoft.visualstudio.debuggee.program: '"C:\Program Files\dotnet\dotnet.exe"'
+      com.microsoft.visualstudio.debuggee.workingdirectory: C:\app
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 8080
+        protocol: tcp
+      - mode: ingress
+        target: 8081
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: C:\Users\se1c8x\AppData\Roaming\Microsoft\UserSecrets
+        target: C:\Users\ContainerUser\AppData\Roaming\Microsoft\UserSecrets
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\se1c8x\AppData\Roaming\ASP.NET\Https
+        target: C:\Users\ContainerUser\AppData\Roaming\ASP.NET\Https
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Users\se1c8x\onecoremsvsmon\17.11.10719.3428
+        target: c:\remote_debugger
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Sdks\Microsoft.Docker.Sdk\tools\win-x64\net8.0
+        target: C:\VSTools
+        read_only: true
+        bind:
+          create_host_path: true
+      - type: bind
+        source: C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\IDE\CommonExtensions\Microsoft\HotReload
+        target: C:\HotReloadAgent
+        read_only: true
+        bind:
+          create_host_path: true
+networks:
+  default:
+    name: dockercompose9886592395778733445_default

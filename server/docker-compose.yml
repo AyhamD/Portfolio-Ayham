@@ -1,0 +1,8 @@
+services:
+  portfolio:
+    image: portfolio
+    build:
+      context: server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
