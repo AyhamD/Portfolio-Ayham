@@ -1,0 +1,103 @@
+{
+  "welcome": "Välkommen till Ayham Darwish Portfolio",
+  "header_text": "Jag är en skicklig fullstack-utvecklare med en passion för att skapa vackra och funktionella webbapplikationer",
+  "languages": {
+    "en": "Engelska",
+    "sv": "Svenska"
+  },
+  "add_skill": "Lägg till färdigheter",
+  "project": "Visa alla projekt",
+  "about": "Om mig",
+  "contact": "kontakta mig",
+  "my_project": "Mina projekt",
+  "working_project": "Kolla in några av de projekt jag har arbetat med.",
+  "about_text": "Jag är en fullstack-utvecklare med en passion för att bygga skalbara och effektiva webbapplikationer. Med en bakgrund inom datavetenskap och flera års erfarenhet inom teknikindustrin har jag utvecklat en stark grund inom både frontend- och backend-teknologier.",
+  "skills": "Färdigheter",
+  "experience": "Erfarenhet",
+  "project_view": {
+    "customer_name": "Kund",
+    "project_name": "Projekt",
+    "project_date": "Datum",
+    "project_competency": "Kompetens",
+    "project_role": "Roll",
+    "Frontend_developer": "Frontend utvecklare"
+  },
+  "about_view": {
+    "experience_year": "3+ år som full-stack-utvecklare",
+    "degree": "Kandidatexamen ingenjör i datavetenskap",
+    "Sweco": "Jobbar som Mjukvaru utvecklare hos Sweco",
+    "epical": "var Anställd som mjukvaruutvecklare vid Epical.",
+    "devize": "Hade anställning som mjukvaruutvecklare på Devize.",
+    "skill_exist": "Färdigheter finns redan",
+    "about": "Om mig",
+    "languages": "Språk",
+    "location": "Plats",
+    "availability": "Tillgänglighet",
+    "working_at_sweco": "Arbetar för närvarande på Sweco"
+  },
+  "contact_view": {
+    "getInTouch": "Kontakta mig",
+    "interestedInWorkingTogether": "Intresserad av att arbeta tillsammans? Fyll i formuläret nedan eller skicka ett e-postmeddelande.",
+    "email": "E-post",
+    "location": "Plats",
+    "downloadCV": "Ladda ner CV",
+    "name": "Namn",
+    "yourName": "Ditt namn",
+    "yourEmail": "Din e-post",
+    "message": "Meddelande",
+    "yourMessage": "Ditt meddelande",
+    "sendMessage": "Skicka meddelande",
+    "messageSent": "Meddelandet har skickats",
+    "thankYouMessage": "Tack för att du kontaktade mig! Jag återkommer snart.",
+    "cvDownload": "CV-nedladdning",
+    "cvDownloadSoon": "CV-nedladdning kommer snart att vara tillgänglig."
+  },
+  "education_view": {
+    "education": "Utbildning",
+    "degree": "Kandidatexamen i datateknik",
+    "description": "Omfattande utbildning inom datateknik, datakommunikation och informationssystem. Grundläggande kunskaper i fullstack-utveckling, systemprogrammering och projektledning."
+  },
+  "experience_view": {
+    "experience": "Erfarenhet"
+  },
+  "system_developer_specializing": "Systemutvecklare med inriktning på webb- och mjukvarulösningar.",
+  "quick_links": "Snabblänkar",
+  "connect": "Kontakt",
+  "built_with": "Byggd med",
+  "and": "och",
+  "header": {
+    "about": "Om mig",
+    "project": "Projekt",
+    "skills": "Färdigheter",
+    "contact": "Kontakta mig",
+    "experience_year": "Erfarenhetsår",
+    "technologies": "Teknologier",
+    "languages": "Språk",
+    "projects": "Visa projekt",
+    "contactMe": "Kontakta mig",
+    "myWork": "Se mitt arbete"
+  },
+  "hero_view": {
+    "title": "Systemutvecklare",
+    "tagline": "Bygger skalbara webbapplikationer med moderna teknologier"
+  },
+  "projects": {
+    "featuredProjects": "Utvalda projekt",
+    "description": "Ett urval av projekt som visar min erfarenhet av fullstack-, frontend-, backend- och företagsutveckling.",
+    "role": "Roll",
+    "noProjectsFound": "Inga projekt hittades.",
+    "all": "Alla projekt",
+    "fullstack": "Fullstack",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "enterprise": "Företag"
+  },
+  "skills_view": {
+    "title": "Färdigheter",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "tools & platforms": "Verktyg & Plattformar",
+    "methodologies": "Metodologier",
+    "design tools": "Designverktyg"
+  }
+}
