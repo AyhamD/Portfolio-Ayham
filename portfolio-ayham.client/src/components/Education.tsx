@@ -1,9 +1,7 @@
 import { GraduationCap } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import type { educationProps } from "../interface/interfaces";
 
 export const Education = ({ education }: { education: educationProps[] }) => {
-  const { t } = useTranslation();
   return (
     <section id="education" className="py-24 bg-slate-900">
       <div className="max-w-5xl mx-auto px-6">
