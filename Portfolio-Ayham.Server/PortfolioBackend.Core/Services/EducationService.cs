@@ -50,10 +50,6 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
         public async Task<IEnumerable<EducationDtos>> GetEducationByIdAsync(string experienceId)
         {
             var education = await _educationRepository.GetByIdAsync(experienceId);
-            if (education == null)
-            {
-                return Enumerable.Empty<EducationDtos>();
-            }
             return _mapper.Map<IEnumerable<EducationDtos>>(education);
         }
 
