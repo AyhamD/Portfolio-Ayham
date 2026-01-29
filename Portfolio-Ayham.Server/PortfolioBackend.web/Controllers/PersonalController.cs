@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Portfolio_Ayham.Server.PortfolioBackend.Core.Dto;
 using Portfolio_Ayham.Server.PortfolioBackend.Core.Services.Interfaces;
 using System.Security.Claims;
@@ -13,22 +14,26 @@ namespace Portfolio_Ayham.Server.PortfolioBackend.web.Controllers
     {
         private readonly IPersonalService _personalService;
         private readonly ILogger<PersonalController> _logger;
+        private readonly IConfiguration _configuration;
 
         public PersonalController(
             IPersonalService personalService,
-            ILogger<PersonalController> logger)
+            ILogger<PersonalController> logger,
+            IConfiguration configuration)
         {
             _personalService = personalService;
             _logger = logger;
+            _configuration = configuration;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<PersonalDtos>> GetPersonal()
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var personal = await _personalService.GetPersonalByUserIdAsync(userId);
+                var ownerUserId = GetPortfolioOwnerUserId();
+                var personal = await _personalService.GetPersonalByUserIdAsync(ownerUserId);
                 return Ok(personal);
             }
             catch (Exception ex)
@@ -54,6 +59,18 @@ namespace Portfolio_Ayham.Server.PortfolioBackend.web.Controllers
                 _logger.LogError(ex, "Error updating personal info");
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        private string GetPortfolioOwnerUserId()
+        {
+            var ownerUserId = _configuration["Portfolio:OwnerUserId"];
+
+            if (string.IsNullOrWhiteSpace(ownerUserId))
+            {
+                throw new InvalidOperationException("Portfolio owner user id is not configured. Please set 'Portfolio:OwnerUserId' in appsettings.json.");
+            }
+
+            return ownerUserId;
         }
 
         private string GetCurrentUserId()

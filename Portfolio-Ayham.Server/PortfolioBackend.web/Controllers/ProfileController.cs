@@ -18,6 +18,7 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         private readonly ISkillService _skillService;
         private readonly IProjectService _projectService;
         private readonly ILogger<ProfileController> _logger;
+        private readonly IConfiguration _configuration;
 
         public ProfileController(
         IAboutService aboutService,
@@ -25,6 +26,7 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         IExperienceService experienceService,
         ISkillService skillService,
         IProjectService projectService,
+        IConfiguration configuration,
         ILogger<ProfileController> logger)
         {
             _aboutService = aboutService;
@@ -32,16 +34,18 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
             _experienceService = experienceService;
             _skillService = skillService;
             _projectService = projectService;
+            _configuration = configuration;
             _logger = logger;
         }
 
+        [AllowAnonymous]
         [HttpGet("about")]
         public async Task<ActionResult<AboutDtos>> GetAbout()
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var about = await _aboutService.GetAboutByUserIdAsync(userId);
+                var ownerUserId = GetPortfolioOwnerUserId();
+                var about = await _aboutService.GetAboutByUserIdAsync(ownerUserId);
                 return Ok(about);
             }
             catch (NotFoundException ex)
@@ -73,13 +77,14 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("Skills")]
         public async Task<ActionResult<SkillDtos>> GetSkill()
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var skill = await _skillService.GetSkillsByUserIdAsync(userId);
+                var ownerUserId = GetPortfolioOwnerUserId();
+                var skill = await _skillService.GetSkillsByUserIdAsync(ownerUserId);
 
                 if (skill == null)
                 {
@@ -114,13 +119,14 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("education")]
         public async Task<ActionResult<AboutDtos>> GetEducation()
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var education = await _educationService.GetEducationsByUserIdAsync(userId);
+                var ownerUserId = GetPortfolioOwnerUserId();
+                var education = await _educationService.GetEducationsByUserIdAsync(ownerUserId);
                 return Ok(education);
             }
             catch (NotFoundException ex)
@@ -152,13 +158,14 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("experience")]
         public async Task<ActionResult<AboutDtos>> GetExperience()
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var experience = await _experienceService.GetExperiencesByUserIdAsync(userId);
+                var ownerUserId = GetPortfolioOwnerUserId();
+                var experience = await _experienceService.GetExperiencesByUserIdAsync(ownerUserId);
                 return Ok(experience);
             }
             catch (NotFoundException ex)
@@ -232,13 +239,14 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("projects")]
         public async Task<ActionResult<AboutDtos>> GetProjects()
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var projects = await _projectService.GetProjectsByUserIdAsync(userId);
+                var ownerUserId = GetPortfolioOwnerUserId();
+                var projects = await _projectService.GetProjectsByUserIdAsync(ownerUserId);
                 return Ok(projects);
             }
             catch (NotFoundException ex)
@@ -309,6 +317,18 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
                 _logger.LogError(ex, "Error deleting project");
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        private string GetPortfolioOwnerUserId()
+        {
+            var ownerUserId = _configuration["Portfolio:OwnerUserId"];
+
+            if (string.IsNullOrWhiteSpace(ownerUserId))
+            {
+                throw new InvalidOperationException("Portfolio owner user id is not configured. Please set 'Portfolio:OwnerUserId' in appsettings.json.");
+            }
+
+            return ownerUserId;
         }
 
         private string GetCurrentUserId()
