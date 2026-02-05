@@ -10,6 +10,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Dto
         public string Position { get; set; } = string.Empty;
         public string Period { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public int Order { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
     }
@@ -22,6 +23,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Dto
         public string Position { get; set; } = string.Empty;
         public string Period { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public int Order { get; set; }
         // Accept dates as strings from the frontend and
         // parse them manually in the service layer.
         public string StartDate { get; set; } = string.Empty;

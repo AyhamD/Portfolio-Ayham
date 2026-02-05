@@ -13,5 +13,6 @@ namespace PortfolioBackend.PortfolioBackend.Core.Models
         public string Role { get; set; } = string.Empty;
         public List<string> Technologies { get; set; } = new();
         public string Category { get; set; } = string.Empty;
+        public int Order { get; set; } = 0;
     }
 }

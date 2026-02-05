@@ -10,6 +10,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Dto
         public string Degree { get; set; } = string.Empty;
         public string Period { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public int Order { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
 
@@ -23,6 +24,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Dto
         public string Degree { get; set; } = string.Empty;
         public string Period { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public int Order { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
     }

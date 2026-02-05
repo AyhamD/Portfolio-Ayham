@@ -8,6 +8,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Models
         public string Company { get; set; } = string.Empty;
         public string Position { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
+        public int Order { get; set; } = 0;
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool IsCurrent { get; set; } = false;

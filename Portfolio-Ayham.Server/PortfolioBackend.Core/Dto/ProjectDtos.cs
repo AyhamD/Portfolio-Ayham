@@ -12,6 +12,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Dto
         public string Role { get; set; }
         public string year { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
+        public int Order { get; set; }
         public List<string> Technologies { get; set; } = new();
     }
 
@@ -24,6 +25,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Dto
         public string Role { get; set; }
         public string year { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
+        public int Order { get; set; }
         public List<string> Technologies { get; set; } = new();
     }
 
