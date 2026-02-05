@@ -19,6 +19,18 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
         }
         public async Task<EducationDtos> CreateEducationAsync(CreateEducationDto createEducationDto)
         {
+            // If an education entry already exists for this user, update it instead of creating a new one
+            var existingEducations = await _educationRepository.GetByUserIdAsync(createEducationDto.UserId);
+            var existing = existingEducations.FirstOrDefault();
+
+            if (existing != null)
+            {
+                _mapper.Map(createEducationDto, existing);
+                existing.UpdatedAt = DateTime.UtcNow;
+                var updated = await _educationRepository.UpdateAsync(existing);
+                return _mapper.Map<EducationDtos>(updated);
+            }
+
             var education = _mapper.Map<Education>(createEducationDto);
             education.CreatedAt = DateTime.UtcNow;
             education.UpdatedAt = null;
