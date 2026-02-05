@@ -81,42 +81,19 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         [HttpGet("Skills")]
         public async Task<ActionResult<SkillDtos>> GetSkill()
         {
-            try
-            {
-                var ownerUserId = GetPortfolioOwnerUserId();
-                var skill = await _skillService.GetSkillsByUserIdAsync(ownerUserId);
-
-                if (skill == null)
-                {
-                    return Ok(new SkillDtos { Skills = new Dictionary<string, List<string>>() });
-                }
-
-                return Ok(skill);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting skill");
-                return StatusCode(500, new { message = "Internal server error" });
-            }
+            var ownerUserId = GetPortfolioOwnerUserId();
+            return Ok(await _skillService.GetSkillsByUserIdAsync(ownerUserId));
         }
 
         [HttpPost("Skills")]
         public async Task<ActionResult<SkillDtos>> UpdateSkill(CreateSkillDto updateSkillDto)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-                updateSkillDto.UserId = userId;
-                var updatedSkills = await _skillService.UpdateSkillAsync(updateSkillDto);
+            var userId = GetCurrentUserId();        // ← logged-in user
+            updateSkillDto.UserId = userId;
+            var updatedSkills = await _skillService.UpdateSkillAsync(updateSkillDto);
 
-                return Ok(updatedSkills);
+            return Ok(updatedSkills);
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating skill");
-                return BadRequest(new { message = ex.Message });
-            }
         }
 
         [AllowAnonymous]
