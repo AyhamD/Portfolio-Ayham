@@ -39,7 +39,7 @@ export interface projectProps {
   role: string;
   technologies: string[];
   category: "frontend" | "backend" | "fullstack" | "enterprise";
-  order: number;
+  order?: number;
 }
 
 export interface AuthContextType {
@@ -59,7 +59,7 @@ export interface experienceProps {
   endDate?: string | null;
   description: string;
   technologies: string[];
-  order: number;
+  order?: number;
 }
 export interface educationProps {
   id?: string;
@@ -67,7 +67,7 @@ export interface educationProps {
   school: string;
   period: string;
   description: string;
-  order: number;
+  order?: number;
 }
 
 export interface SetupCheckResponse {
