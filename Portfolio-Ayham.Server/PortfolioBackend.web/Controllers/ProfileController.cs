@@ -64,8 +64,8 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
-                createAboutDto.userId = userId;
+                var ownerUserId = GetPortfolioOwnerUserId();
+                createAboutDto.userId = ownerUserId;
 
                 var about = await _aboutService.CreateOrUpdateAboutAsync(createAboutDto);
                 return Ok(about);
@@ -81,19 +81,43 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         [HttpGet("Skills")]
         public async Task<ActionResult<SkillDtos>> GetSkill()
         {
-            var ownerUserId = GetPortfolioOwnerUserId();
-            return Ok(await _skillService.GetSkillsByUserIdAsync(ownerUserId));
+            try
+            {
+                var ownerUserId = GetPortfolioOwnerUserId();
+                var skill = await _skillService.GetSkillsByUserIdAsync(ownerUserId);
+
+                if (skill == null)
+                {
+                    return Ok(new SkillDtos { Skills = new Dictionary<string, List<string>>() });
+                }
+
+                return Ok(skill);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting skill");
+                return StatusCode(500, new { message = "Internal server error" });
+            }
         }
 
+        
         [HttpPost("Skills")]
         public async Task<ActionResult<SkillDtos>> UpdateSkill(CreateSkillDto updateSkillDto)
         {
-            var userId = GetCurrentUserId();        // ← logged-in user
-            updateSkillDto.UserId = userId;
-            var updatedSkills = await _skillService.UpdateSkillAsync(updateSkillDto);
+            try
+            {
+                var ownerUserId = GetPortfolioOwnerUserId();
+                updateSkillDto.UserId = ownerUserId;
+                var updatedSkills = await _skillService.UpdateSkillAsync(updateSkillDto);
 
-            return Ok(updatedSkills);
+                return Ok(updatedSkills);
 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating skill");
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [AllowAnonymous]
@@ -122,8 +146,8 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
-                createEducationDto.UserId = userId;
+                var ownerUserId = GetPortfolioOwnerUserId();
+                createEducationDto.UserId = ownerUserId;
 
                 var education = await _educationService.CreateEducationAsync(createEducationDto);
                 return Ok(education);
@@ -161,8 +185,8 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
-                createExperienceDto.UserId = userId;
+                var ownerUserId = GetPortfolioOwnerUserId();
+                createExperienceDto.UserId = ownerUserId;
 
                 var experience = await _experienceService.CreateExperienceAsync(createExperienceDto);
                 return CreatedAtAction(nameof(GetExperience), new { id = experience.Id }, experience);
@@ -179,8 +203,8 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
-                updateExperienceDto.UserId = userId;
+                var ownerUserId = GetPortfolioOwnerUserId();
+                updateExperienceDto.UserId = ownerUserId;
 
                 var updatedExperience = await _experienceService.UpdateExperienceAsync(id, updateExperienceDto);
                 return Ok(updatedExperience);
@@ -201,7 +225,6 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
                 var success = await _experienceService.DeleteExperienceAsync(id);
 
                 if (!success)
@@ -242,8 +265,8 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
-                createProjectDto.UserId = userId;
+                var ownerUserId = GetPortfolioOwnerUserId();
+                createProjectDto.UserId = ownerUserId;
                 var project = await _projectService.CreateProjectAsync(createProjectDto);
                 return Ok(project);
             }
@@ -259,8 +282,8 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
-                updateProjectDto.UserId = userId;
+                var ownerUserId = GetPortfolioOwnerUserId();
+                updateProjectDto.UserId = ownerUserId;
 
                 var updateProject = await _projectService.UpdateProjectAsync(id, updateProjectDto);
                 return Ok(updateProject);
@@ -281,7 +304,6 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         {
             try
             {
-                var userId = GetCurrentUserId();
                 var success = await _projectService.DeleteProjectAsync(id);
 
                 if (!success)
