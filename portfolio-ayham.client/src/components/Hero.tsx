@@ -110,14 +110,14 @@ const Hero = ({ data }: { data: personal | null }) => {
           {/* Social Links */}
           <div className="flex gap-6 justify-center mt-12">
             <a
-              href="https://www.linkedin.com/in/ayham-darwish-0580a9181/"
+              href="https://github.com/AyhamD"
               target="_blank"
               className="text-slate-400 hover:text-cyan-400 transition-colors duration-300"
             >
               <Github className="w-6 h-6" />
             </a>
             <a
-              href="https://github.com/AyhamD"
+              href="https://www.linkedin.com/in/ayham-darwish-0580a9181/"
               target="_blank"
               className="text-slate-400 hover:text-cyan-400 transition-colors duration-300"
             >

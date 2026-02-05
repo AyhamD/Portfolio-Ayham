@@ -29,7 +29,7 @@ export const Skills = ({ skills }: { skills: TechnicalSkills }) => {
                   : "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700"
               }`}
             >
-              {t(`skills_view.${category.toLowerCase()}`)}
+              {category.toLowerCase()}
             </button>
           ))}
         </div>
