@@ -19,10 +19,32 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
         public async Task<ExperienceDtos> CreateExperienceAsync(CreateExperienceDto createExperienceDto)
         {
             var experience = _mapper.Map<Experience>(createExperienceDto);
-            if(experience.EndDate != null && experience.EndDate < experience.StartDate)
+
+            // Parse dates from string DTO fields
+            if (!DateTime.TryParse(createExperienceDto.StartDate, out var startDate))
+            {
+                throw new ApplicationException("Invalid start date format.");
+            }
+            experience.StartDate = startDate;
+
+            if (!string.IsNullOrWhiteSpace(createExperienceDto.EndDate))
+            {
+                if (!DateTime.TryParse(createExperienceDto.EndDate, out var endDate))
+                {
+                    throw new ApplicationException("Invalid end date format.");
+                }
+                experience.EndDate = endDate;
+            }
+            else
+            {
+                experience.EndDate = null;
+            }
+
+            if (experience.EndDate != null && experience.EndDate < experience.StartDate)
             {
                 throw new ApplicationException("End date cannot be earlier than start date.");
             }
+
             experience.CreatedAt = DateTime.UtcNow;
             experience.UpdatedAt = null;
             var createdExperience = await _experienceRepository.AddAsync(experience);
@@ -69,10 +91,31 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
             {
                 throw new ApplicationException("Experience entry not found.");
             }
+            // Parse and update dates from DTO
+            if (!DateTime.TryParse(updateExperienceDto.StartDate, out var startDate))
+            {
+                throw new ApplicationException("Invalid start date format.");
+            }
+            existingExperience.StartDate = startDate;
+
+            if (!string.IsNullOrWhiteSpace(updateExperienceDto.EndDate))
+            {
+                if (!DateTime.TryParse(updateExperienceDto.EndDate, out var endDate))
+                {
+                    throw new ApplicationException("Invalid end date format.");
+                }
+                existingExperience.EndDate = endDate;
+            }
+            else
+            {
+                existingExperience.EndDate = null;
+            }
+
             if (existingExperience.EndDate != null && existingExperience.EndDate < existingExperience.StartDate)
             {
                 throw new ApplicationException("End date cannot be earlier than start date.");
             }
+
             existingExperience.UpdatedAt = DateTime.UtcNow;
             _mapper.Map(updateExperienceDto, existingExperience);
             var updated = await _experienceRepository.UpdateAsync(existingExperience);

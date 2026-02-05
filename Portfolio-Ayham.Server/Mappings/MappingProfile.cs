@@ -27,7 +27,10 @@ namespace Portfolio_Ayham.Server.Mappings
 
             // Experience mappings
             CreateMap<Experience, ExperienceDtos>();
-            CreateMap<CreateExperienceDto, Experience>();
+            CreateMap<CreateExperienceDto, Experience>()
+                // Dates are provided as strings in the DTO and parsed manually in the service
+                .ForMember(dest => dest.StartDate, opt => opt.Ignore())
+                .ForMember(dest => dest.EndDate, opt => opt.Ignore());
 
             CreateMap<Personal, PersonalDtos>();
             CreateMap<CreatePersonalDto, Personal>();
