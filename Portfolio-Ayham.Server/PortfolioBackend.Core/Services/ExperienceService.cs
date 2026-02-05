@@ -53,10 +53,12 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
         public async Task<IEnumerable<ExperienceDtos>> GetExperiencesByUserIdAsync(string userId)
         {
             var experiences = await _experienceRepository.GetByUserIdAsync(userId);
-            if(experiences == null || !experiences.Any())
+            if (experiences == null || !experiences.Any())
             {
-                throw new ApplicationException($"No experience entries found for user id {userId}");
+                // Return empty list instead of throwing so API can respond with 200 and []
+                return Enumerable.Empty<ExperienceDtos>();
             }
+
             return _mapper.Map<IEnumerable<ExperienceDtos>>(experiences);
         }
 

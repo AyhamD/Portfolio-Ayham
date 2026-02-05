@@ -40,10 +40,11 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
         public async Task<IEnumerable<EducationDtos>> GetEducationsByUserIdAsync(string userId)
         {
             var educations = await _educationRepository.GetByUserIdAsync(userId);
-            if (educations == null)
+            if (educations == null || !educations.Any())
             {
-                throw new ApplicationException("No education entries found for user id {userId}");
+                return Enumerable.Empty<EducationDtos>();
             }
+
             return _mapper.Map<IEnumerable<EducationDtos>>(educations);
         }
 
