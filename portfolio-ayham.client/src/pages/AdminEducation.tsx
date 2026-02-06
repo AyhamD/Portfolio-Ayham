@@ -160,7 +160,8 @@ const AdminEducation: React.FC = () => {
     await Promise.all(
       withOrder.map((item, index) => {
         if (!item.id) return Promise.resolve();
-        return contentAPI.updateEducation(item.id, { order: index });
+        const updatedData = { ...item, order: index };
+        return contentAPI.updateEducation(item.id, updatedData);
       }),
     );
   };
