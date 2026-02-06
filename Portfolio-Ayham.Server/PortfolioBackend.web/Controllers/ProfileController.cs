@@ -142,7 +142,7 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
         }
 
         [HttpPost("education")]
-        public async Task<ActionResult<AboutDtos>> CreateEduction(CreateEducationDto createEducationDto)
+        public async Task<ActionResult<EducationDtos>> CreateEduction(CreateEducationDto createEducationDto)
         {
             try
             {
@@ -150,11 +150,52 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
                 createEducationDto.UserId = ownerUserId;
 
                 var education = await _educationService.CreateEducationAsync(createEducationDto);
-                return Ok(education);
+                return CreatedAtAction(nameof(GetEducation), new { id = education.Id }, education);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating/updating about");
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("education/{id}")]
+        public async Task<ActionResult<EducationDtos>> UpdateEducation(string id, CreateEducationDto updateEducationDto)
+        {
+            try
+            {
+                var ownerUserId = GetPortfolioOwnerUserId();
+                updateEducationDto.UserId = ownerUserId;
+
+                var updated = await _educationService.UpdateEducationAsync(id, updateEducationDto);
+                return Ok(updated);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating education");
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("education/{id}")]
+        public async Task<ActionResult> DeleteEducation(string id)
+        {
+            try
+            {
+                var success = await _educationService.DeleteEducationAsync(id);
+
+                if (!success)
+                    return NotFound(new { message = "Education not found" });
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting education");
                 return BadRequest(new { message = ex.Message });
             }
         }

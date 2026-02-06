@@ -46,8 +46,12 @@ export const contentAPI = {
 
   // Education
   getEducation: () => httpClient.get<educationProps[]>("/Profile/education"),
-  updateEducation: (data: Partial<educationProps>) =>
+  createEducation: (data: Omit<educationProps, "id">) =>
     httpClient.post<educationProps>("/Profile/education", data),
+  updateEducation: (id: string, data: Partial<educationProps>) =>
+    httpClient.put<educationProps>(`/Profile/education/${id}`, data),
+  deleteEducation: (id: string) =>
+    httpClient.delete(`/Profile/education/${id}`),
 };
 
 export default httpClient;

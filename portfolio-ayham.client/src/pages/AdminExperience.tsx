@@ -11,6 +11,7 @@ import { useToast } from "../hook/useToast";
 import { contentAPI } from "../services/authService";
 import type { experienceProps } from "../interface/interfaces";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { formatDateISOToYMD, formatDateISOToDisplay } from "../utils/date";
 
 const AdminExperience: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -42,7 +43,9 @@ const AdminExperience: React.FC = () => {
       const res = await contentAPI.getExperience();
       const data = Array.isArray(res.data) ? res.data : [];
       // sort by order so drag-and-drop starts from current ordering
-      const sorted = data.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      const sorted = data
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setExperiences(sorted);
     } catch (error) {
       toast({
@@ -57,11 +60,11 @@ const AdminExperience: React.FC = () => {
 
   const handleSaveOrder = async (orderedItems: experienceProps[]) => {
     try {
-      // Persist only the order field for each experience
       await Promise.all(
-        orderedItems.map((exp, index) =>
-          contentAPI.updateExperience(exp.id!, { order: index })
-        )
+        orderedItems.map((exp, index) => {
+          const updatedExp = { ...exp, order: index };
+          return contentAPI.updateExperience(exp.id!, updatedExp);
+        }),
       );
       toast({
         title: "Order updated",
@@ -104,7 +107,7 @@ const AdminExperience: React.FC = () => {
         });
       } else {
         await contentAPI.createExperience(
-          formData as Omit<experienceProps, "id">
+          formData as Omit<experienceProps, "id">,
         );
         toast({
           title: "Success!",
@@ -125,7 +128,11 @@ const AdminExperience: React.FC = () => {
 
   const handleEdit = (experience: experienceProps) => {
     setEditingExperience(experience);
-    setFormData(experience);
+    setFormData({
+      ...experience,
+      startDate: formatDateISOToYMD(experience.startDate),
+      endDate: experience.endDate ? formatDateISOToYMD(experience.endDate) : "",
+    });
     setShowForm(true);
   };
 
@@ -252,8 +259,8 @@ const AdminExperience: React.FC = () => {
                   Start Date
                 </label>
                 <Input
-                  type="text"
-                  value={formData.startDate}
+                  type="date"
+                  value={formatDateISOToYMD(formData.startDate as string)}
                   onChange={(e) =>
                     setFormData({ ...formData, startDate: e.target.value })
                   }
@@ -267,8 +274,8 @@ const AdminExperience: React.FC = () => {
                   End Date (leave empty if current)
                 </label>
                 <Input
-                  type="text"
-                  value={formData.endDate ?? ""}
+                  type="date"
+                  value={formatDateISOToYMD(formData.endDate as string)}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -358,9 +365,9 @@ const AdminExperience: React.FC = () => {
                                     {exp.company}
                                   </p>
                                   <p className="text-slate-500 text-sm mt-1">
-                                    {new Date(exp.startDate).toLocaleDateString()} -{" "}
+                                    {formatDateISOToDisplay(exp.startDate)} -{" "}
                                     {exp.endDate
-                                      ? new Date(exp.endDate).toLocaleDateString()
+                                      ? formatDateISOToDisplay(exp.endDate)
                                       : "Present"}
                                   </p>
                                 </div>
