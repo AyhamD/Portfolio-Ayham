@@ -17,6 +17,10 @@ export const Projects = ({ projects }: { projects: projectProps[] }) => {
   const filteredProjects =
     filter === "all" ? projects : projects.filter((p) => p.category === filter);
 
+  const orderedProjects = filteredProjects
+    .slice()
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
   return (
     <section id="projects" className="py-24 bg-slate-900">
       <div className="max-w-7xl mx-auto px-6">
@@ -49,7 +53,7 @@ export const Projects = ({ projects }: { projects: projectProps[] }) => {
 
         {/* Projects Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project, index) => (
+          {orderedProjects.map((project, index) => (
             <div
               key={project.id}
               className="group bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden hover:border-cyan-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10 hover:-translate-y-2"
@@ -104,7 +108,7 @@ export const Projects = ({ projects }: { projects: projectProps[] }) => {
           ))}
         </div>
 
-        {filteredProjects.length === 0 && (
+        {orderedProjects.length === 0 && (
           <div className="text-center py-12">
             <p className="text-slate-400 text-lg">
               {t("projects.noProjectsFound")}

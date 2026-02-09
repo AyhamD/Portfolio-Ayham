@@ -9,6 +9,7 @@ import { useAuth } from '../context.tsx/authContext';
 import { useToast } from '../hook/useToast';
 import { contentAPI } from '../services/authService';
 import type { projectProps } from '../interface/interfaces';
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const AdminProjects: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -41,7 +42,9 @@ const AdminProjects: React.FC = () => {
   const loadProjects = async () => {
     try {
       const res = await contentAPI.getProjects();
-      setProjects(Array.isArray(res.data) ? res.data : []);
+      const data = Array.isArray(res.data) ? res.data : [];
+      const sorted = data.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      setProjects(sorted);
     } catch (error) {
       toast({
         title: "Error",
@@ -128,6 +131,40 @@ const AdminProjects: React.FC = () => {
       ...formData,
       technologies: formData.technologies?.filter(t => t !== tech) || []
     });
+  };
+
+  const handleDragEnd = async (result: any) => {
+    if (!result.destination) return;
+
+    const newItems = Array.from(projects);
+    const [moved] = newItems.splice(result.source.index, 1);
+    newItems.splice(result.destination.index, 0, moved);
+
+    const withOrder = newItems.map((item, index) => ({
+      ...item,
+      order: index,
+    }));
+
+    setProjects(withOrder);
+
+    try {
+      await Promise.all(
+        withOrder.map((item, index) => {
+          if (!item.id) return Promise.resolve();
+          return contentAPI.updateProject(item.id, { order: index });
+        })
+      );
+      toast({
+        title: "Order updated",
+        description: "Project order has been saved.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save project order",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -309,57 +346,82 @@ const AdminProjects: React.FC = () => {
               <p className="text-slate-400">No projects yet. Click "Add Project" to create one.</p>
             </Card>
           ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              {projects.map((project) => (
-                <Card key={project.id} className="bg-slate-800/50 border-slate-700 p-6 hover:border-cyan-500/50 transition-all">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-white mb-1">{project.title}</h3>
-                      <p className="text-cyan-400 text-sm">{project.client}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleEdit(project)}
-                        size="sm"
-                        variant="ghost"
-                        className="text-slate-400 hover:text-cyan-400"
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="projects-list">
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="grid md:grid-cols-2 gap-6"
+                  >
+                    {projects.map((project, index) => (
+                      <Draggable
+                        key={project.id}
+                        draggableId={project.id!}
+                        index={index}
                       >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        onClick={() => handleDelete(project.id!)}
-                        size="sm"
-                        variant="ghost"
-                        className="text-slate-400 hover:text-red-400"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 mb-3">
-                    <p className="text-slate-400 text-sm"><span className="text-slate-500">Year:</span> {project.year}</p>
-                    <p className="text-slate-400 text-sm"><span className="text-slate-500">Role:</span> {project.role}</p>
-                    <p className="text-slate-400 text-sm"><span className="text-slate-500">Category:</span> <span className="capitalize">{project.category}</span></p>
-                  </div>
-                  
-                  <p className="text-slate-300 text-sm mb-3 line-clamp-2">{project.description}</p>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {project.technologies.slice(0, 5).map((tech, idx) => (
-                      <span key={idx} className="bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded">
-                        {tech}
-                      </span>
+                        {(dragProvided) => (
+                          <div
+                            ref={dragProvided.innerRef}
+                            {...dragProvided.draggableProps}
+                            {...dragProvided.dragHandleProps}
+                          >
+                            <Card className="bg-slate-800/50 border-slate-700 p-6 hover:border-cyan-500/50 transition-all">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <h3 className="text-lg font-bold text-white mb-1">{project.title}</h3>
+                                  <p className="text-cyan-400 text-sm">{project.client}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() => handleEdit(project)}
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-slate-400 hover:text-cyan-400"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleDelete(project.id!)}
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-slate-400 hover:text-red-400"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 mb-3">
+                                <p className="text-slate-400 text-sm"><span className="text-slate-500">Year:</span> {project.year}</p>
+                                <p className="text-slate-400 text-sm"><span className="text-slate-500">Role:</span> {project.role}</p>
+                                <p className="text-slate-400 text-sm"><span className="text-slate-500">Category:</span> <span className="capitalize">{project.category}</span></p>
+                              </div>
+
+                              <p className="text-slate-300 text-sm mb-3 line-clamp-2">{project.description}</p>
+
+                              <div className="flex flex-wrap gap-2">
+                                {project.technologies.slice(0, 5).map((tech, idx) => (
+                                  <span key={idx} className="bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded">
+                                    {tech}
+                                  </span>
+                                ))}
+                                {project.technologies.length > 5 && (
+                                  <span className="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded">
+                                    +{project.technologies.length - 5}
+                                  </span>
+                                )}
+                              </div>
+                            </Card>
+                          </div>
+                        )}
+                      </Draggable>
                     ))}
-                    {project.technologies.length > 5 && (
-                      <span className="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded">
-                        +{project.technologies.length - 5}
-                      </span>
-                    )}
+                    {provided.placeholder}
                   </div>
-                </Card>
-              ))}
-            </div>
+                )}
+              </Droppable>
+            </DragDropContext>
           )}
         </div>
       </main>
