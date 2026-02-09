@@ -151,7 +151,9 @@ const AdminProjects: React.FC = () => {
       await Promise.all(
         withOrder.map((item, index) => {
           if (!item.id) return Promise.resolve();
-          return contentAPI.updateProject(item.id, { order: index });
+
+          const updatedData = { ...item, order: index };
+          return contentAPI.updateProject(item.id, updatedData);
         })
       );
       toast({
