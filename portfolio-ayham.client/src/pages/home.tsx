@@ -10,19 +10,37 @@ import { Projects } from "../components/Project";
 import { Skills } from "../components/Skills";
 import { contentAPI } from "../services/authService";
 import { portfolioData } from "../data/mock";
-import type { aboutProps, educationProps, experienceProps, personal, projectProps, TechnicalSkills } from "../interface/interfaces";
+import type {
+  aboutProps,
+  educationProps,
+  experienceProps,
+  personal,
+  projectProps,
+  TechnicalSkills,
+} from "../interface/interfaces";
 
 export const HomePage = () => {
   const [aboutData, setAboutData] = useState<aboutProps | null>(null);
   const [personalData, setPersonalData] = useState<personal | null>(null);
   const [skillsData, setSkillsData] = useState<TechnicalSkills | null>(null);
   const [projectsData, setProjectsData] = useState<projectProps[] | null>(null);
-  const [experienceData, setExperienceData] = useState<experienceProps[] | null>(null);
-  const [educationData, setEducationData] = useState<educationProps[] | null>(null);
+  const [experienceData, setExperienceData] = useState<
+    experienceProps[] | null
+  >(null);
+  const [educationData, setEducationData] = useState<educationProps[] | null>(
+    null,
+  );
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [aboutRes, personalRes, skillsRes, projectsRes, experienceRes, educationRes] = await Promise.all([
+        const [
+          aboutRes,
+          personalRes,
+          skillsRes,
+          projectsRes,
+          experienceRes,
+          educationRes,
+        ] = await Promise.all([
           contentAPI.getAbout(),
           contentAPI.getPersonal(),
           contentAPI.getSkills(),
@@ -76,14 +94,24 @@ export const HomePage = () => {
         }
       />
       <Experience
-        experience={experienceData ?? portfolioData.experience.map((e) => ({
-          ...e,
-          id: String(e.id),
-        }))}
+        experience={
+          experienceData ??
+          portfolioData.experience.map((e) => ({
+            ...e,
+            id: String(e.id),
+            position: e.role,
+          }))
+        }
       />
       <Education education={educationData ?? [portfolioData.education]} />
-      <Contacts personal={portfolioData.personal} />
-      <Footer />
+      <Contacts
+        personal={{
+          email: personalData?.email ?? portfolioData.personal.email,
+          location: personalData?.location ?? portfolioData.personal.location,
+          cvUrl: personalData?.cvUrl,
+        }}
+      />
+      <Footer email={personalData?.email ?? portfolioData.personal.email} />
     </>
   );
 };

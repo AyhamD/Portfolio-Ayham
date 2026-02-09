@@ -58,6 +58,7 @@ export const AdminAbout = () => {
           email: personalData?.email,
           location: personalData?.location,
           tagline: personalData?.tagline,
+          cvUrl: personalData?.cvUrl,
         }),
       ]);
       navigate("/admin/dashboard");
@@ -201,6 +202,22 @@ export const AdminAbout = () => {
                   className="bg-slate-900 border-slate-700 text-white"
                 />
               </div>
+            </div>
+            <div>
+              <label className="text-slate-300 text-sm font-medium mb-2 block">
+                CV URL
+              </label>
+              <Input
+                placeholder="/cv/ayham-cv.pdf or https://..."
+                value={personalData?.cvUrl ?? ""}
+                onChange={(e) =>
+                  setPersonalData({
+                    ...personalData,
+                    cvUrl: e.target.value,
+                  })
+                }
+                className="bg-slate-900 border-slate-700 text-white"
+              />
             </div>
             <div>
               <label className="text-slate-300 text-sm font-medium mb-2 block">

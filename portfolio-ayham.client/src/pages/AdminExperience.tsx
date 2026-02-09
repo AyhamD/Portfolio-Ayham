@@ -12,6 +12,8 @@ import { contentAPI } from "../services/authService";
 import type { experienceProps } from "../interface/interfaces";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { formatDateISOToYMD, formatDateISOToDisplay } from "../utils/date";
+import Modal from "../components/ui/modal";
+import { DatePicker } from "../components/ui/datePicker";
 
 const AdminExperience: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,13 +21,16 @@ const AdminExperience: React.FC = () => {
   const { toast } = useToast();
 
   const [experiences, setExperiences] = useState<experienceProps[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [experienceToDelete, setExperienceToDelete] =
+    useState<experienceProps | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingExperience, setEditingExperience] =
     useState<experienceProps | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<Partial<experienceProps>>({
     company: "",
-    role: "",
+    position: "",
     startDate: "",
     endDate: "",
     description: "",
@@ -156,10 +161,33 @@ const AdminExperience: React.FC = () => {
     }
   };
 
+  const confirmDelete = async () => {
+    if (!experienceToDelete?.id) return;
+    try {
+      await contentAPI.deleteExperience(experienceToDelete.id);
+      toast({
+        title: "Deleted",
+        description: "Experience entry deleted successfully.",
+      });
+      setExperiences((prev) =>
+        prev.filter((exp) => exp.id !== experienceToDelete.id),
+      );
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete experience entry",
+        variant: "destructive",
+      });
+    } finally {
+      setShowDeleteConfirm(false);
+      setExperienceToDelete(null);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       company: "",
-      role: "",
+      position: "",
       startDate: "",
       endDate: "",
       description: "",
@@ -207,6 +235,40 @@ const AdminExperience: React.FC = () => {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+        <Modal
+          open={showDeleteConfirm && !!experienceToDelete}
+          onClose={() => {
+            setShowDeleteConfirm(false);
+            setExperienceToDelete(null);
+          }}
+          title="Delete experience entry?"
+          description={
+            experienceToDelete
+              ? `You are about to delete "${experienceToDelete.position}" at "${experienceToDelete.company}". This action cannot be undone.`
+              : undefined
+          }
+          footer={
+            <>
+              <Button
+                variant="outline"
+                className="border-slate-700 text-white"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setExperienceToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-red-500 hover:bg-red-600 text-white"
+                onClick={confirmDelete}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            </>
+          }
+        />
         {/* Add/Edit Form */}
         {showForm && (
           <Card className="bg-slate-800/50 border-slate-700 p-6">
@@ -241,12 +303,12 @@ const AdminExperience: React.FC = () => {
                 </div>
                 <div>
                   <label className="text-slate-300 text-sm font-medium mb-2 block">
-                    Role
+                    position
                   </label>
                   <Input
-                    value={formData.role}
+                    value={formData.position}
                     onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value })
+                      setFormData({ ...formData, position: e.target.value })
                     }
                     required
                     className="bg-slate-900 border-slate-700 text-white"
@@ -254,35 +316,23 @@ const AdminExperience: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">
-                  Start Date
-                </label>
-                <Input
-                  type="date"
+              <div className="flex justify-between gap-5">
+                <DatePicker
+                  label="Start Date"
                   value={formatDateISOToYMD(formData.startDate as string)}
-                  onChange={(e) =>
-                    setFormData({ ...formData, startDate: e.target.value })
+                  onChange={(e: string) =>
+                    setFormData({ ...formData, startDate: e })
                   }
-                  required
-                  className="bg-slate-900 border-slate-700 text-white"
                 />
-              </div>
-
-              <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">
-                  End Date (leave empty if current)
-                </label>
-                <Input
-                  type="date"
+                <DatePicker
+                  label="End Date (leave empty if current)"
                   value={formatDateISOToYMD(formData.endDate as string)}
-                  onChange={(e) =>
+                  onChange={(e: string) =>
                     setFormData({
                       ...formData,
-                      endDate: e.target.value || undefined,
+                      endDate: e || undefined,
                     })
                   }
-                  className="bg-slate-900 border-slate-700 text-white"
                 />
               </div>
 
@@ -306,7 +356,7 @@ const AdminExperience: React.FC = () => {
                   type="button"
                   onClick={resetForm}
                   variant="outline"
-                  className="border-slate-700"
+                  className="border-slate-700 text-white"
                 >
                   Cancel
                 </Button>
@@ -359,7 +409,7 @@ const AdminExperience: React.FC = () => {
                               <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1">
                                   <h3 className="text-xl font-bold text-white mb-1">
-                                    {exp.role}
+                                    {exp.position}
                                   </h3>
                                   <p className="text-cyan-400 font-medium">
                                     {exp.company}

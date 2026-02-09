@@ -1,7 +1,7 @@
 import { Github, Heart, Linkedin, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-export const Footer = () => {
+export const Footer = ({ email }: { email: string }) => {
   const currentYear = new Date().getFullYear();
   const { t } = useTranslation();
   return (
@@ -20,7 +20,9 @@ export const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-white font-semibold mb-3">{t("quick_links")}</h4>
+            <h4 className="text-white font-semibold mb-3">
+              {t("quick_links")}
+            </h4>
             <div className="space-y-2">
               <a
                 href="#about"
@@ -54,22 +56,24 @@ export const Footer = () => {
             <h4 className="text-white font-semibold mb-3">{t("connect")}</h4>
             <div className="flex gap-4">
               <a
-                href="#"
-                className="bg-slate-800 p-3 rounded-lg hover:bg-cyan-500 transition-all duration-300 group"
+                href="https://github.com/AyhamD"
+                target="_blank"
+                className="text-slate-400 hover:text-cyan-400 transition-colors duration-300"
               >
-                <Github className="w-5 h-5 text-slate-400 group-hover:text-white" />
+                <Github className="w-6 h-6" />
               </a>
               <a
-                href="#"
-                className="bg-slate-800 p-3 rounded-lg hover:bg-cyan-500 transition-all duration-300 group"
+                href="https://www.linkedin.com/in/ayham-darwish-0580a9181/"
+                target="_blank"
+                className="text-slate-400 hover:text-cyan-400 transition-colors duration-300"
               >
-                <Linkedin className="w-5 h-5 text-slate-400 group-hover:text-white" />
+                <Linkedin className="w-6 h-6" />
               </a>
               <a
-                href="#"
-                className="bg-slate-800 p-3 rounded-lg hover:bg-cyan-500 transition-all duration-300 group"
+                href={`mailto:${email}`}
+                className="text-slate-400 hover:text-cyan-400 transition-colors duration-300"
               >
-                <Mail className="w-5 h-5 text-slate-400 group-hover:text-white" />
+                <Mail className="w-6 h-6" />
               </a>
             </div>
           </div>

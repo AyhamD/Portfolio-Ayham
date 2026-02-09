@@ -1,39 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import { Card } from '../components/ui/card';
-import { ArrowLeft, Save, Plus, X, Edit2, Trash2 } from 'lucide-react';
-import { useAuth } from '../context.tsx/authContext';
-import { useToast } from '../hook/useToast';
-import { contentAPI } from '../services/authService';
-import type { projectProps } from '../interface/interfaces';
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Card } from "../components/ui/card";
+import { ArrowLeft, Save, Plus, X, Edit2, Trash2 } from "lucide-react";
+import { useAuth } from "../context.tsx/authContext";
+import { useToast } from "../hook/useToast";
+import { contentAPI } from "../services/authService";
+import type { projectProps } from "../interface/interfaces";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import Modal from "../components/ui/modal";
 
 const AdminProjects: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const [projects, setProjects] = useState<projectProps[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingProject, setEditingProject] = useState<projectProps | null>(null);
+  const [editingProject, setEditingProject] = useState<projectProps | null>(
+    null,
+  );
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<projectProps | null>(
+    null,
+  );
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<Partial<projectProps>>({
-    title: '',
-    client: '',
-    year: '',
-    description: '',
-    role: '',
+    title: "",
+    client: "",
+    year: "",
+    description: "",
+    role: "",
     technologies: [],
-    category: 'frontend'
+    category: "frontend",
   });
-  const [techInput, setTechInput] = useState('');
+  const [techInput, setTechInput] = useState("");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate('/admin/login');
+      navigate("/admin/login");
     } else if (isAuthenticated) {
       loadProjects();
     }
@@ -43,7 +50,9 @@ const AdminProjects: React.FC = () => {
     try {
       const res = await contentAPI.getProjects();
       const data = Array.isArray(res.data) ? res.data : [];
-      const sorted = data.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      const sorted = data
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setProjects(sorted);
     } catch (error) {
       toast({
@@ -58,16 +67,22 @@ const AdminProjects: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingProject) {
         await contentAPI.updateProject(editingProject.id!, formData);
-        toast({ title: "Success!", description: "Project updated successfully." });
+        toast({
+          title: "Success!",
+          description: "Project updated successfully.",
+        });
       } else {
-        await contentAPI.createProject(formData as Omit<projectProps, 'id'>);
-        toast({ title: "Success!", description: "Project created successfully." });
+        await contentAPI.createProject(formData as Omit<projectProps, "id">);
+        toast({
+          title: "Success!",
+          description: "Project created successfully.",
+        });
       }
-      
+
       resetForm();
       loadProjects();
     } catch (error) {
@@ -86,11 +101,15 @@ const AdminProjects: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this project?')) return;
-    
+    if (!window.confirm("Are you sure you want to delete this project?"))
+      return;
+
     try {
       await contentAPI.deleteProject(id);
-      toast({ title: "Success!", description: "Project deleted successfully." });
+      toast({
+        title: "Success!",
+        description: "Project deleted successfully.",
+      });
       loadProjects();
     } catch (error) {
       toast({
@@ -103,33 +122,59 @@ const AdminProjects: React.FC = () => {
 
   const resetForm = () => {
     setFormData({
-      title: '',
-      client: '',
-      year: '',
-      description: '',
-      role: '',
+      title: "",
+      client: "",
+      year: "",
+      description: "",
+      role: "",
       technologies: [],
-      category: 'frontend'
+      category: "frontend",
     });
     setEditingProject(null);
     setShowForm(false);
-    setTechInput('');
+    setTechInput("");
   };
 
   const addTechnology = () => {
-    if (techInput.trim() && !formData.technologies?.includes(techInput.trim())) {
+    if (
+      techInput.trim() &&
+      !formData.technologies?.includes(techInput.trim())
+    ) {
       setFormData({
         ...formData,
-        technologies: [...(formData.technologies || []), techInput.trim()]
+        technologies: [...(formData.technologies || []), techInput.trim()],
       });
-      setTechInput('');
+      setTechInput("");
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!projectToDelete?.id) return;
+    try {
+      await contentAPI.deleteProject(projectToDelete.id);
+      toast({
+        title: "Deleted",
+        description: "Project entry deleted successfully.",
+      });
+      setProjects((prev) =>
+        prev.filter((proj) => proj.id !== projectToDelete.id),
+      );
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete project entry",
+        variant: "destructive",
+      });
+    } finally {
+      setShowDeleteConfirm(false);
+      setProjectToDelete(null);
     }
   };
 
   const removeTechnology = (tech: string) => {
     setFormData({
       ...formData,
-      technologies: formData.technologies?.filter(t => t !== tech) || []
+      technologies: formData.technologies?.filter((t) => t !== tech) || [],
     });
   };
 
@@ -154,7 +199,7 @@ const AdminProjects: React.FC = () => {
 
           const updatedData = { ...item, order: index };
           return contentAPI.updateProject(item.id, updatedData);
-        })
+        }),
       );
       toast({
         title: "Order updated",
@@ -185,14 +230,18 @@ const AdminProjects: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link to="/admin/dashboard">
-                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-400 hover:text-white"
+                >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
                 </Button>
               </Link>
               <h1 className="text-2xl font-bold text-white">Manage Projects</h1>
             </div>
-            <Button 
+            <Button
               onClick={() => setShowForm(!showForm)}
               className="bg-cyan-500 hover:bg-cyan-600 text-white"
             >
@@ -205,11 +254,45 @@ const AdminProjects: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
         {/* Add/Edit Form */}
+        <Modal
+          open={showDeleteConfirm && !!projectToDelete}
+          onClose={() => {
+            setShowDeleteConfirm(false);
+            setProjectToDelete(null);
+          }}
+          title="Delete project entry?"
+          description={
+            projectToDelete
+              ? `You are about to delete "${projectToDelete.title}" for client "${projectToDelete.client}". This action cannot be undone.`
+              : undefined
+          }
+          footer={
+            <>
+              <Button
+                variant="outline"
+                className="border-slate-700 text-white"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setProjectToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-red-500 hover:bg-red-600 text-white"
+                onClick={confirmDelete}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            </>
+          }
+        />
         {showForm && (
           <Card className="bg-slate-800/50 border-slate-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">
-                {editingProject ? 'Edit Project' : 'Add New Project'}
+                {editingProject ? "Edit Project" : "Add New Project"}
               </h2>
               <Button
                 onClick={resetForm}
@@ -220,23 +303,31 @@ const AdminProjects: React.FC = () => {
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-slate-300 text-sm font-medium mb-2 block">Title</label>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Title
+                  </label>
                   <Input
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     required
                     className="bg-slate-900 border-slate-700 text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-300 text-sm font-medium mb-2 block">Client</label>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Client
+                  </label>
                   <Input
                     value={formData.client}
-                    onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, client: e.target.value })
+                    }
                     required
                     className="bg-slate-900 border-slate-700 text-white"
                   />
@@ -245,20 +336,31 @@ const AdminProjects: React.FC = () => {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-slate-300 text-sm font-medium mb-2 block">Year</label>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Year
+                  </label>
                   <Input
                     value={formData.year}
-                    onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, year: e.target.value })
+                    }
                     placeholder="e.g., 2024"
                     required
                     className="bg-slate-900 border-slate-700 text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-300 text-sm font-medium mb-2 block">Category</label>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Category
+                  </label>
                   <select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        category: e.target.value as any,
+                      })
+                    }
                     required
                     className="w-full bg-slate-900 border border-slate-700 text-white rounded-md px-3 py-2"
                   >
@@ -271,10 +373,14 @@ const AdminProjects: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Role</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">
+                  Role
+                </label>
                 <Input
                   value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value })
+                  }
                   placeholder="e.g., Frontend Developer"
                   required
                   className="bg-slate-900 border-slate-700 text-white"
@@ -282,10 +388,14 @@ const AdminProjects: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Description</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">
+                  Description
+                </label>
                 <Textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={4}
                   required
                   className="bg-slate-900 border-slate-700 text-white resize-none"
@@ -293,12 +403,16 @@ const AdminProjects: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">Technologies</label>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">
+                  Technologies
+                </label>
                 <div className="flex gap-2 mb-2">
                   <Input
                     value={techInput}
                     onChange={(e) => setTechInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTechnology())}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && (e.preventDefault(), addTechnology())
+                    }
                     placeholder="Add technology"
                     className="bg-slate-900 border-slate-700 text-white flex-1"
                   />
@@ -312,7 +426,10 @@ const AdminProjects: React.FC = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {formData.technologies?.map((tech, idx) => (
-                    <div key={idx} className="bg-slate-700 text-white px-3 py-1 rounded-md flex items-center gap-2">
+                    <div
+                      key={idx}
+                      className="bg-slate-700 text-white px-3 py-1 rounded-md flex items-center gap-2"
+                    >
                       {tech}
                       <button
                         type="button"
@@ -327,12 +444,20 @@ const AdminProjects: React.FC = () => {
               </div>
 
               <div className="flex gap-2 justify-end">
-                <Button type="button" onClick={resetForm} variant="outline" className="border-slate-700">
+                <Button
+                  type="button"
+                  onClick={resetForm}
+                  variant="outline"
+                  className="border-slate-700 text-white"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-cyan-500 hover:bg-cyan-600 text-white">
+                <Button
+                  type="submit"
+                  className="bg-cyan-500 hover:bg-cyan-600 text-white"
+                >
                   <Save className="w-4 h-4 mr-2" />
-                  {editingProject ? 'Update' : 'Create'} Project
+                  {editingProject ? "Update" : "Create"} Project
                 </Button>
               </div>
             </form>
@@ -341,11 +466,15 @@ const AdminProjects: React.FC = () => {
 
         {/* Projects List */}
         <div className="space-y-4">
-          <h2 className="text-xl font-bold text-white">All Projects ({projects.length})</h2>
-          
+          <h2 className="text-xl font-bold text-white">
+            All Projects ({projects.length})
+          </h2>
+
           {projects.length === 0 ? (
             <Card className="bg-slate-800/50 border-slate-700 p-12 text-center">
-              <p className="text-slate-400">No projects yet. Click "Add Project" to create one.</p>
+              <p className="text-slate-400">
+                No projects yet. Click "Add Project" to create one.
+              </p>
             </Card>
           ) : (
             <DragDropContext onDragEnd={handleDragEnd}>
@@ -371,8 +500,12 @@ const AdminProjects: React.FC = () => {
                             <Card className="bg-slate-800/50 border-slate-700 p-6 hover:border-cyan-500/50 transition-all">
                               <div className="flex items-start justify-between mb-3">
                                 <div className="flex-1">
-                                  <h3 className="text-lg font-bold text-white mb-1">{project.title}</h3>
-                                  <p className="text-cyan-400 text-sm">{project.client}</p>
+                                  <h3 className="text-lg font-bold text-white mb-1">
+                                    {project.title}
+                                  </h3>
+                                  <p className="text-cyan-400 text-sm">
+                                    {project.client}
+                                  </p>
                                 </div>
                                 <div className="flex gap-2">
                                   <Button
@@ -395,19 +528,39 @@ const AdminProjects: React.FC = () => {
                               </div>
 
                               <div className="space-y-2 mb-3">
-                                <p className="text-slate-400 text-sm"><span className="text-slate-500">Year:</span> {project.year}</p>
-                                <p className="text-slate-400 text-sm"><span className="text-slate-500">Role:</span> {project.role}</p>
-                                <p className="text-slate-400 text-sm"><span className="text-slate-500">Category:</span> <span className="capitalize">{project.category}</span></p>
+                                <p className="text-slate-400 text-sm">
+                                  <span className="text-slate-500">Year:</span>{" "}
+                                  {project.year}
+                                </p>
+                                <p className="text-slate-400 text-sm">
+                                  <span className="text-slate-500">Role:</span>{" "}
+                                  {project.role}
+                                </p>
+                                <p className="text-slate-400 text-sm">
+                                  <span className="text-slate-500">
+                                    Category:
+                                  </span>{" "}
+                                  <span className="capitalize">
+                                    {project.category}
+                                  </span>
+                                </p>
                               </div>
 
-                              <p className="text-slate-300 text-sm mb-3 line-clamp-2">{project.description}</p>
+                              <p className="text-slate-300 text-sm mb-3 line-clamp-2">
+                                {project.description}
+                              </p>
 
                               <div className="flex flex-wrap gap-2">
-                                {project.technologies.slice(0, 5).map((tech, idx) => (
-                                  <span key={idx} className="bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded">
-                                    {tech}
-                                  </span>
-                                ))}
+                                {project.technologies
+                                  .slice(0, 5)
+                                  .map((tech, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded"
+                                    >
+                                      {tech}
+                                    </span>
+                                  ))}
                                 {project.technologies.length > 5 && (
                                   <span className="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded">
                                     +{project.technologies.length - 5}

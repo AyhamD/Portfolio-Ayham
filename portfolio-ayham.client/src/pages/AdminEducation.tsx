@@ -216,7 +216,7 @@ const AdminEducation: React.FC = () => {
             <>
               <Button
                 variant="outline"
-                className="border-slate-700 text-slate-300"
+                className="border-slate-700 text-white"
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setEducationToDelete(null);
@@ -315,7 +315,7 @@ const AdminEducation: React.FC = () => {
                   type="button"
                   onClick={resetForm}
                   variant="outline"
-                  className="border-slate-700"
+                  className="border-slate-700 text-white"
                 >
                   Cancel
                 </Button>

@@ -8,6 +8,7 @@ export interface personal {
   location?: string;
   yearsExperience?: number;
   languages?: languages[];
+  cvUrl?: string;
   id?: string;
 }
 
@@ -54,7 +55,7 @@ export interface AuthContextType {
 export interface experienceProps {
   id?: string;
   company: string;
-  role: string;
+  position: string;
   startDate: string;
   endDate?: string | null;
   description: string;

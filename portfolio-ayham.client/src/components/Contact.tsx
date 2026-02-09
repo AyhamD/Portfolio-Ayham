@@ -6,12 +6,13 @@ import { useToast } from "../hook/useToast";
 import { Textarea } from "./ui/textarea";
 import { useTranslation } from "react-i18next";
 
-interface Personal {
+interface PersonalContactData {
   email: string;
   location: string;
+  cvUrl?: string;
 }
 
-export const Contacts = ({ personal }: { personal: Personal }) => {
+export const Contacts = ({ personal }: { personal: PersonalContactData }) => {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
@@ -32,10 +33,20 @@ export const Contacts = ({ personal }: { personal: Personal }) => {
   };
 
   const handleDownloadCV = () => {
+    if (!personal.cvUrl) {
+      toast({
+        title: t("contact_view.cvDownload"),
+        description: t("contact_view.cvDownloadSoon"),
+      });
+      return;
+    }
+
     toast({
       title: t("contact_view.cvDownload"),
       description: t("contact_view.cvDownloadSoon"),
     });
+
+    window.open(personal.cvUrl, "_blank");
   };
 
   return (

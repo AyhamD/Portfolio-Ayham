@@ -38,7 +38,7 @@ export const Experience = ({
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
                       <div className="mb-4 md:mb-0">
                         <h3 className="text-2xl font-bold text-white mb-1">
-                          {exp.role}
+                          {exp.position}
                         </h3>
                         <div className="flex items-center gap-2 text-cyan-400 font-medium">
                           <Briefcase className="w-4 h-4" />

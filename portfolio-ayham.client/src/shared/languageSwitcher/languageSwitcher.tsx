@@ -45,26 +45,31 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ languages }) => {
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <Button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="items-center text-primary-foreground rounded-md shadow-sm"
+        variant="ghost"
+        className="items-center bg-slate-800/60 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-700 shadow-sm px-2 py-1"
       >
-        <img src={languages.find(lang => lang.code === currentLanguage)?.icon} className="flex"/>
+        <img
+          src={languages.find((lang) => lang.code === currentLanguage)?.icon}
+          className="w-5 h-5 flex"
+        />
       </Button>
       {isDropdownOpen && (
-        <div className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md dark:bg-gray-700 dark:divide-gray-600 shadow-lg">
+        <div className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-slate-900 border border-slate-700 shadow-lg">
           <ul className="py-1" role="menu" aria-orientation="vertical">
             {languages.map((lang) => (
               <li key={lang.code}>
                 <button 
-                  className={`flex items-center w-full px-4 py-2 text-sm text-left truncate dark:text-gray-400 active:bg-primary hover:bg-primary ${
+                  className={`flex items-center w-full px-3 py-2 text-sm text-left truncate transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500 ${
                     currentLanguage === lang.code
-                      ? "bg-primary"
-                      : "text-gray-500"
+                      ? "bg-cyan-500/20 text-cyan-300"
+                      : "text-slate-200 hover:bg-slate-800 hover:text-white"
                   }`}
                   role="menuitem"
                   tabIndex={-1}
                   onClick={() => handleLanguageChange(lang.code)}
                 >
-                  <img src={lang.icon} className="pr-1"/> {lang.name}
+                  <img src={lang.icon} className="w-5 h-5 mr-2" />
+                  {lang.name}
                 </button>
               </li>
             ))}
