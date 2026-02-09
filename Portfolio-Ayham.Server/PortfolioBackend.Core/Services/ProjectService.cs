@@ -51,13 +51,19 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
             return _mapper.Map<IEnumerable<ProjectDtos>>(projects);
         }
 
-        public Task<bool> UpdateProjectAsync(string id, CreateProjectDto updateProjectDto)
+        public async Task<bool> UpdateProjectAsync(string id, CreateProjectDto updateProjectDto)
         {
-            var project = _mapper.Map<Project>(updateProjectDto);
-            project.UpdatedAt = DateTime.UtcNow;
-            _mapper.Map(updateProjectDto, project);
-            var updated = _projectRepository.UpdateAsync(project);
-            return Task.FromResult(true);
+            var existingProject = await _projectRepository.GetByIdAsync(id);
+            if (existingProject == null)
+            {
+                throw new ApplicationException("Project entry not found.");
+            }
+
+            _mapper.Map(updateProjectDto, existingProject);
+            existingProject.UpdatedAt = DateTime.UtcNow;
+
+            await _projectRepository.UpdateAsync(existingProject);
+            return true;
         }
     }
 }
