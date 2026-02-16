@@ -12,7 +12,8 @@ import { Input } from "../components/ui/input";
 export const AdminAbout = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  const [aboutData, setAboutData] = useState<aboutProps | null>(null);
+  const [aboutData, setAboutData] = useState<aboutProps | null>(null); // EN
+  const [aboutSummarySv, setAboutSummarySv] = useState<string>(""); // SV summary only
   const [personalData, setPersonalData] = useState<personal | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -28,11 +29,13 @@ export const AdminAbout = () => {
 
   const loadData = async () => {
     try {
-      const [aboutRes, personalRes] = await Promise.all([
-        contentAPI.getAbout(),
+      const [aboutEnRes, aboutSvRes, personalRes] = await Promise.all([
+        contentAPI.getAbout("en"),
+        contentAPI.getAbout("sv"),
         contentAPI.getPersonal(),
       ]);
-      setAboutData(aboutRes.data);
+      setAboutData(aboutEnRes.data);
+      setAboutSummarySv(aboutSvRes.data.summary ?? "");
       setPersonalData(personalRes.data);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -45,11 +48,19 @@ export const AdminAbout = () => {
     setSaving(true);
     try {
       await Promise.all([
+        // Save EN
         contentAPI.updateAbout({
+          language: "en",
           summary: aboutData?.summary,
           highlights: aboutData?.highlights,
           languages: aboutData?.languages,
-          location: aboutData?.location,
+        }),
+        // Save SV
+        contentAPI.updateAbout({
+          language: "sv",
+          summary: aboutSummarySv,
+          highlights: aboutData?.highlights,
+          languages: aboutData?.languages,
         }),
 
         contentAPI.updatePersonal({
@@ -264,18 +275,34 @@ export const AdminAbout = () => {
           </div>
         </Card>
 
-        {/* About Summary */}
-        <Card className="bg-slate-800/50 border-slate-700 p-6">
-          <h2 className="text-xl font-bold text-white mb-4">About Summary</h2>
-          <Textarea
-            value={aboutData?.summary}
-            onChange={(e) =>
-              setAboutData({ ...aboutData, summary: e.target.value })
-            }
-            rows={6}
-            className="bg-slate-900 border-slate-700 text-white resize-none"
-          />
-        </Card>
+        {/* About Summary for EN and SV */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card className="bg-slate-800/50 border-slate-700 p-6">
+            <h2 className="text-xl font-bold text-white mb-4">
+              About Summary (EN)
+            </h2>
+            <Textarea
+              value={aboutData?.summary}
+              onChange={(e) =>
+                setAboutData({ ...aboutData, summary: e.target.value })
+              }
+              rows={6}
+              className="bg-slate-900 border-slate-700 text-white resize-none"
+            />
+          </Card>
+
+          <Card className="bg-slate-800/50 border-slate-700 p-6">
+            <h2 className="text-xl font-bold text-white mb-4">
+              About Summary (SV)
+            </h2>
+            <Textarea
+              value={aboutSummarySv}
+              onChange={(e) => setAboutSummarySv(e.target.value)}
+              rows={6}
+              className="bg-slate-900 border-slate-700 text-white resize-none"
+            />
+          </Card>
+        </div>
 
         {/* Highlights */}
         <Card className="bg-slate-800/50 border-slate-700 p-6">

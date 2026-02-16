@@ -17,7 +17,9 @@ namespace Portfolio_Ayham.Server.Mappings
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true));
 
             // About mappings
-            CreateMap<About, AboutDtos>();
+            CreateMap<About, AboutDtos>()
+                .ForMember(dest => dest.Summary, opt => opt.Ignore())
+                .ForMember(dest => dest.Highlights, opt => opt.Ignore());
             CreateMap<CreateAboutDto, About>();
             CreateMap<Language, LanguageDto>().ReverseMap();
 

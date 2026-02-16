@@ -18,6 +18,7 @@ import type {
   projectProps,
   TechnicalSkills,
 } from "../interface/interfaces";
+import i18n from "../i18n";
 
 export const HomePage = () => {
   const [aboutData, setAboutData] = useState<aboutProps | null>(null);
@@ -31,6 +32,7 @@ export const HomePage = () => {
     null,
   );
   useEffect(() => {
+    console.log(i18n.language);
     const loadData = async () => {
       try {
         const [
@@ -41,7 +43,7 @@ export const HomePage = () => {
           experienceRes,
           educationRes,
         ] = await Promise.all([
-          contentAPI.getAbout(),
+          contentAPI.getAbout(i18n.language || "en"),
           contentAPI.getPersonal(),
           contentAPI.getSkills(),
           contentAPI.getProjects(),
@@ -59,7 +61,7 @@ export const HomePage = () => {
       }
     };
     loadData();
-  }, []);
+  }, [i18n.language]);
   return (
     <>
       <Header />

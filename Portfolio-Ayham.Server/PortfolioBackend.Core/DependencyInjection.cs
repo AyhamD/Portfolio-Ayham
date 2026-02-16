@@ -3,6 +3,7 @@ using portfolio.Server.PortfolioBackend.Core.Services.Interfaces;
 using portfolio.Server.PortfolioBackend.Core.Services;
 using Portfolio_Ayham.Server.PortfolioBackend.Core.Services.Interfaces;
 using Portfolio_Ayham.Server.PortfolioBackend.Core.Services;
+using Portfolio_Ayham.Server.PortfolioBackend.Core.languageHelper;
 
 namespace Portfolio_Ayham.Server.PortfolioBackend.Core
 {
@@ -17,6 +18,7 @@ namespace Portfolio_Ayham.Server.PortfolioBackend.Core
             services.AddScoped<ISkillService, SkillService>();
             services.AddScoped<IAboutService, AboutService>();
             services.AddScoped<IPersonalService, PersonalService>();
+            services.AddSingleton<LanguageHelper>();
             return services;
         }
     }

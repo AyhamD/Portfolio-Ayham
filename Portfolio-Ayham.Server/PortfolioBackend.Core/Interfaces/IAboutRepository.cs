@@ -5,6 +5,6 @@ namespace portfolio.Server.PortfolioBackend.Core.Interfaces
 {
     public interface IAboutRepository : IRepository<About>
     {
-        Task<About?> GetByUserIdAsync(string userId);
+        Task<About?> GetByUserIdAsync(string userId, string language = "en");
     }
 }

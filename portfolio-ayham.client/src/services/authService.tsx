@@ -19,8 +19,9 @@ export const contentAPI = {
     httpClient.put<personal>("/personal", data),
 
   // About
-  getAbout: () => httpClient.get<aboutProps>("/Profile/about"),
-  updateAbout: (data: Partial<aboutProps>) =>
+  getAbout: (language: string) =>
+    httpClient.get<aboutProps>(`/Profile/about?lang=${language}`),
+  updateAbout: (data: Partial<aboutProps> & { language: string }) =>
     httpClient.post<aboutProps>("/Profile/about", data),
   
   // Skills

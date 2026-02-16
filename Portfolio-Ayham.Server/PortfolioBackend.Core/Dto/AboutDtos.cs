@@ -20,6 +20,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Dto
     public class CreateAboutDto
     {
         public string userId { get; set; } = string.Empty;
+        public string Language { get; set; } = "en";
         public string Summary { get; set; } = string.Empty;
         public List<string> Highlights { get; set; } = new();
         public List<LanguageDto> Languages { get; set; } = new();

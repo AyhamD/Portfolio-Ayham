@@ -40,12 +40,12 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
 
         [AllowAnonymous]
         [HttpGet("about")]
-        public async Task<ActionResult<AboutDtos>> GetAbout()
+        public async Task<ActionResult<AboutDtos>> GetAbout([FromQuery] string? lang  = "en")
         {
             try
             {
                 var ownerUserId = GetPortfolioOwnerUserId();
-                var about = await _aboutService.GetAboutByUserIdAsync(ownerUserId);
+                var about = await _aboutService.GetAboutByUserIdAsync(ownerUserId, lang);
                 return Ok(about);
             }
             catch (NotFoundException ex)

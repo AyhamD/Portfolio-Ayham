@@ -5,6 +5,7 @@ using portfolio.Server.PortfolioBackend.Core.Interfaces;
 using portfolio.Server.PortfolioBackend.Core.Models;
 using portfolio.Server.PortfolioBackend.Core.Services.Interfaces;
 using PortfolioBackend.PortfolioBackend.Core.Exceptions;
+using Portfolio_Ayham.Server.PortfolioBackend.Core.languageHelper;
 
 namespace portfolio.Server.PortfolioBackend.Core.Services
 {
@@ -12,29 +13,45 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
     {
         private readonly IAboutRepository _aboutRepository;
         private readonly IMapper _mapper;
+        private readonly LanguageHelper _LanguageHelper; 
 
-        public AboutService(IAboutRepository aboutRepository, IMapper mapper)
+        public AboutService(IAboutRepository aboutRepository, IMapper mapper, LanguageHelper LanguageHelper)
         {
             _aboutRepository = aboutRepository;
             _mapper = mapper;
+            _LanguageHelper = LanguageHelper;  
         }
+
         public async Task<AboutDtos> CreateOrUpdateAboutAsync(CreateAboutDto createAboutDto)
         {
             var existingAbout = await _aboutRepository.GetByUserIdAsync(createAboutDto.userId);
             if (existingAbout != null)
             {
-                _mapper.Map(createAboutDto, existingAbout);
+                existingAbout.Summary[createAboutDto.Language] = createAboutDto.Summary; 
+                existingAbout.Highlights[createAboutDto.Language] = createAboutDto.Highlights ?? new List<string>();
+                if (createAboutDto.Languages != null)
+                {
+                    existingAbout.Languages = _mapper.Map<List<Language>>(createAboutDto.Languages);
+                }
                 existingAbout.UpdatedAt = DateTime.UtcNow;
                 var updated = await _aboutRepository.UpdateAsync(existingAbout);
-                return _mapper.Map<AboutDtos>(updated);
+                return await GetAboutByUserIdAsync(updated.UserId, createAboutDto.Language);
             }
             else
             {
-                var about = _mapper.Map<About>(createAboutDto);
+                var about = new About
+                {
+                    UserId = createAboutDto.userId,
+                    Summary = new Dictionary<string, string> { { createAboutDto.Language, createAboutDto.Summary } },
+                    Highlights = new Dictionary<string, List<string>> { { createAboutDto.Language, createAboutDto.Highlights ?? new List<string>() } },
+                    Languages = _mapper.Map<List<Language>>(createAboutDto.Languages),
+                    CreatedAt = DateTime.UtcNow
+                };
                 var created = await _aboutRepository.AddAsync(about);
-                return _mapper.Map<AboutDtos>(created);
+                return await GetAboutByUserIdAsync(created.UserId, createAboutDto.Language);
             }
         }
+
         public async Task<bool> DeleteAboutAsync(string userId)
         {
             var about = await _aboutRepository.GetByUserIdAsync(userId);
@@ -46,7 +63,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
             return true;
         }
 
-        public async Task<AboutDtos> GetAboutByUserIdAsync(string userId)
+        public async Task<AboutDtos> GetAboutByUserIdAsync(string userId, string language = "en")
         {
             var about = await _aboutRepository.GetByUserIdAsync(userId);
             if (about == null)
@@ -55,13 +72,20 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
                 {
                     id = string.Empty,
                     userId = string.Empty,
-                    Summary = string.Empty,
+                    Summary = string.Empty,  
                     Highlights = new List<string>(),
                     Languages = new List<LanguageDto>(),
                 };
             }
 
-            return _mapper.Map<AboutDtos>(about);
+            return new AboutDtos
+            {
+                id = about.Id,
+                userId = about.UserId,
+                Summary = _LanguageHelper.GetString(about.Summary, language),
+                Highlights = _LanguageHelper.GetList(about.Highlights, language),
+                Languages = _mapper.Map<List<LanguageDto>>(about.Languages),
+            };
         }
     }
 }

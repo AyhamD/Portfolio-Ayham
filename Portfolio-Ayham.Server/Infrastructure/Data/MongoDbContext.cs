@@ -11,8 +11,20 @@ namespace portfolio.Server.Infrastructure.Data
 
         public MongoDbContext(IConfiguration configuration, ILogger<MongoDbContext> logger)
         {
-            var connectionString = configuration.GetConnectionString("MongoDB");
-            var databaseName = configuration.GetValue<string>("MongoDBSettings:Protfolio") ?? "Protfolio";
+            // Prefer strongly-typed MongoDb section from configuration
+            var connectionString = configuration["MongoDb:ConnectionString"];
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                // Fallback to classic ConnectionStrings section if configured there
+                connectionString = configuration.GetConnectionString("MongoDB");
+            }
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new ArgumentNullException(nameof(connectionString), "MongoDB connection string is not configured. Please set 'MongoDb:ConnectionString' in appsettings.Development.json/appsettings.json or as an environment variable.");
+            }
+
+            var databaseName = configuration["MongoDb:DatabaseName"] ?? "Protfolio";
 
             var client = new MongoClient(connectionString);
             _database = client.GetDatabase(databaseName);

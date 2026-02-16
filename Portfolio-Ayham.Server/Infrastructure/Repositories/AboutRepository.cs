@@ -42,7 +42,7 @@ namespace portfolio.Server.Infrastructure.Repositories
             return await _abouts.Find(about => about.Id == id).FirstOrDefaultAsync();
         }
 
-        public async Task<About?> GetByUserIdAsync(string userId)
+        public async Task<About?> GetByUserIdAsync(string userId,string language)
         {
             return await _abouts.Find(about => about.UserId == userId).FirstOrDefaultAsync();
         }
