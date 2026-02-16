@@ -23,7 +23,13 @@ const AdminEducation: React.FC = () => {
   const [editingEducation, setEditingEducation] =
     useState<educationProps | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<Partial<educationProps>>({
+  const [formDataEn, setFormDataEn] = useState<Partial<educationProps>>({
+    degree: "",
+    school: "",
+    period: "",
+    description: "",
+  });
+  const [formDataSv, setFormDataSv] = useState<Partial<educationProps>>({
     degree: "",
     school: "",
     period: "",
@@ -40,7 +46,7 @@ const AdminEducation: React.FC = () => {
 
   const loadEducations = async () => {
     try {
-      const res = await contentAPI.getEducation();
+      const res = await contentAPI.getEducation("en");
       setEducations(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       toast({
@@ -57,17 +63,43 @@ const AdminEducation: React.FC = () => {
     e.preventDefault();
 
     try {
-      const payload = {
-        school: formData.school || "",
-        degree: formData.degree || "",
-        period: formData.period || "",
-        description: formData.description || "",
+      const basePayloadEn = {
+        school: formDataEn.school || "",
+        degree: formDataEn.degree || "",
+        period: formDataEn.period || "",
+        description: formDataEn.description || "",
       };
 
       if (editingEducation && editingEducation.id) {
-        await contentAPI.updateEducation(editingEducation.id, payload);
+        // Update EN description and base fields
+        await contentAPI.updateEducation(editingEducation.id, {
+          ...basePayloadEn,
+          language: "en",
+        });
+
+        // Update SV description if provided
+        if (formDataSv.description && formDataSv.description.trim().length > 0) {
+          await contentAPI.updateEducation(editingEducation.id, {
+            ...basePayloadEn,
+            description: formDataSv.description,
+            language: "sv",
+          });
+        }
       } else {
-        await contentAPI.createEducation(payload as Omit<educationProps, "id">);
+        // Create education with EN description first
+        const created = await contentAPI.createEducation({
+          ...(basePayloadEn as Omit<educationProps, "id">),
+          language: "en",
+        });
+
+        // Then store SV description on the same entry if present
+        if (formDataSv.description && formDataSv.description.trim().length > 0) {
+          await contentAPI.updateEducation(created.data.id!, {
+            ...basePayloadEn,
+            description: formDataSv.description,
+            language: "sv",
+          });
+        }
       }
 
       toast({
@@ -90,7 +122,15 @@ const AdminEducation: React.FC = () => {
 
   const handleEdit = (education: educationProps) => {
     setEditingEducation(education);
-    setFormData(education);
+    setFormDataEn(education);
+    // When editing we only know the current language (EN) from this list;
+    // SV description will be loaded lazily if needed later.
+    setFormDataSv({
+      degree: education.degree,
+      school: education.school,
+      period: education.period,
+      description: "",
+    });
     setShowForm(true);
   };
 
@@ -127,7 +167,13 @@ const AdminEducation: React.FC = () => {
   };
 
   const resetForm = () => {
-    setFormData({
+    setFormDataEn({
+      degree: "",
+      school: "",
+      period: "",
+      description: "",
+    });
+    setFormDataSv({
       degree: "",
       school: "",
       period: "",
@@ -160,7 +206,7 @@ const AdminEducation: React.FC = () => {
     await Promise.all(
       withOrder.map((item, index) => {
         if (!item.id) return Promise.resolve();
-        const updatedData = { ...item, order: index };
+        const updatedData = { ...item, order: index, language: "en" };
         return contentAPI.updateEducation(item.id, updatedData);
       }),
     );
@@ -258,9 +304,9 @@ const AdminEducation: React.FC = () => {
                     Degree / Course
                   </label>
                   <Input
-                    value={formData.degree}
+                    value={formDataEn.degree}
                     onChange={(e) =>
-                      setFormData({ ...formData, degree: e.target.value })
+                      setFormDataEn({ ...formDataEn, degree: e.target.value })
                     }
                     required
                     className="bg-slate-900 border-slate-700 text-white"
@@ -271,9 +317,9 @@ const AdminEducation: React.FC = () => {
                     School / Provider
                   </label>
                   <Input
-                    value={formData.school}
+                    value={formDataEn.school}
                     onChange={(e) =>
-                      setFormData({ ...formData, school: e.target.value })
+                      setFormDataEn({ ...formDataEn, school: e.target.value })
                     }
                     required
                     className="bg-slate-900 border-slate-700 text-white"
@@ -286,28 +332,49 @@ const AdminEducation: React.FC = () => {
                   Period (e.g. 2018 - 2021)
                 </label>
                 <Input
-                  value={formData.period}
+                  value={formDataEn.period}
                   onChange={(e) =>
-                    setFormData({ ...formData, period: e.target.value })
+                    setFormDataEn({ ...formDataEn, period: e.target.value })
                   }
                   required
                   className="bg-slate-900 border-slate-700 text-white"
                 />
               </div>
 
-              <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">
-                  Description
-                </label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  rows={4}
-                  required
-                  className="bg-slate-900 border-slate-700 text-white resize-none"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Description (EN)
+                  </label>
+                  <Textarea
+                    value={formDataEn.description}
+                    onChange={(e) =>
+                      setFormDataEn({
+                        ...formDataEn,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={4}
+                    required
+                    className="bg-slate-900 border-slate-700 text-white resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Description (SV)
+                  </label>
+                  <Textarea
+                    value={formDataSv.description}
+                    onChange={(e) =>
+                      setFormDataSv({
+                        ...formDataSv,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={4}
+                    className="bg-slate-900 border-slate-700 text-white resize-none"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2 justify-end">

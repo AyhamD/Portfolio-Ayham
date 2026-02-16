@@ -27,7 +27,16 @@ const AdminProjects: React.FC = () => {
     null,
   );
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<Partial<projectProps>>({
+  const [formDataEn, setFormDataEn] = useState<Partial<projectProps>>({
+    title: "",
+    client: "",
+    year: "",
+    description: "",
+    role: "",
+    technologies: [],
+    category: "frontend",
+  });
+  const [formDataSv, setFormDataSv] = useState<Partial<projectProps>>({
     title: "",
     client: "",
     year: "",
@@ -48,7 +57,7 @@ const AdminProjects: React.FC = () => {
 
   const loadProjects = async () => {
     try {
-      const res = await contentAPI.getProjects();
+      const res = await contentAPI.getProjects("en");
       const data = Array.isArray(res.data) ? res.data : [];
       const sorted = data
         .slice()
@@ -69,14 +78,52 @@ const AdminProjects: React.FC = () => {
     e.preventDefault();
 
     try {
+      const basePayloadEn = {
+        title: formDataEn.title || "",
+        client: formDataEn.client || "",
+        year: formDataEn.year || "",
+        description: formDataEn.description || "",
+        role: formDataEn.role || "",
+        technologies: formDataEn.technologies || [],
+        category: formDataEn.category || "frontend",
+      };
+
       if (editingProject) {
-        await contentAPI.updateProject(editingProject.id!, formData);
+        // Update EN
+        await contentAPI.updateProject(editingProject.id!, {
+          ...basePayloadEn,
+          language: "en",
+        });
+
+        // Update SV description if provided
+        if (formDataSv.description && formDataSv.description.trim().length > 0) {
+          await contentAPI.updateProject(editingProject.id!, {
+            ...basePayloadEn,
+            description: formDataSv.description,
+            language: "sv",
+          });
+        }
+
         toast({
           title: "Success!",
           description: "Project updated successfully.",
         });
       } else {
-        await contentAPI.createProject(formData as Omit<projectProps, "id">);
+        // Create EN project first
+        const created = await contentAPI.createProject({
+          ...(basePayloadEn as Omit<projectProps, "id">),
+          language: "en",
+        });
+
+        // Then add SV description on same project if present
+        if (formDataSv.description && formDataSv.description.trim().length > 0) {
+          await contentAPI.updateProject(created.data.id!, {
+            ...basePayloadEn,
+            description: formDataSv.description,
+            language: "sv",
+          });
+        }
+
         toast({
           title: "Success!",
           description: "Project created successfully.",
@@ -96,7 +143,11 @@ const AdminProjects: React.FC = () => {
 
   const handleEdit = (project: projectProps) => {
     setEditingProject(project);
-    setFormData(project);
+    setFormDataEn(project);
+    setFormDataSv({
+      ...project,
+      description: "",
+    });
     setShowForm(true);
   };
 
@@ -121,7 +172,16 @@ const AdminProjects: React.FC = () => {
   };
 
   const resetForm = () => {
-    setFormData({
+    setFormDataEn({
+      title: "",
+      client: "",
+      year: "",
+      description: "",
+      role: "",
+      technologies: [],
+      category: "frontend",
+    });
+    setFormDataSv({
       title: "",
       client: "",
       year: "",
@@ -138,11 +198,11 @@ const AdminProjects: React.FC = () => {
   const addTechnology = () => {
     if (
       techInput.trim() &&
-      !formData.technologies?.includes(techInput.trim())
+      !formDataEn.technologies?.includes(techInput.trim())
     ) {
-      setFormData({
-        ...formData,
-        technologies: [...(formData.technologies || []), techInput.trim()],
+      setFormDataEn({
+        ...formDataEn,
+        technologies: [...(formDataEn.technologies || []), techInput.trim()],
       });
       setTechInput("");
     }
@@ -172,9 +232,9 @@ const AdminProjects: React.FC = () => {
   };
 
   const removeTechnology = (tech: string) => {
-    setFormData({
-      ...formData,
-      technologies: formData.technologies?.filter((t) => t !== tech) || [],
+    setFormDataEn({
+      ...formDataEn,
+      technologies: formDataEn.technologies?.filter((t) => t !== tech) || [],
     });
   };
 
@@ -197,7 +257,7 @@ const AdminProjects: React.FC = () => {
         withOrder.map((item, index) => {
           if (!item.id) return Promise.resolve();
 
-          const updatedData = { ...item, order: index };
+          const updatedData = { ...item, order: index, language: "en" };
           return contentAPI.updateProject(item.id, updatedData);
         }),
       );
@@ -311,9 +371,9 @@ const AdminProjects: React.FC = () => {
                     Title
                   </label>
                   <Input
-                    value={formData.title}
+                    value={formDataEn.title}
                     onChange={(e) =>
-                      setFormData({ ...formData, title: e.target.value })
+                      setFormDataEn({ ...formDataEn, title: e.target.value })
                     }
                     required
                     className="bg-slate-900 border-slate-700 text-white"
@@ -324,9 +384,9 @@ const AdminProjects: React.FC = () => {
                     Client
                   </label>
                   <Input
-                    value={formData.client}
+                    value={formDataEn.client}
                     onChange={(e) =>
-                      setFormData({ ...formData, client: e.target.value })
+                      setFormDataEn({ ...formDataEn, client: e.target.value })
                     }
                     required
                     className="bg-slate-900 border-slate-700 text-white"
@@ -340,9 +400,9 @@ const AdminProjects: React.FC = () => {
                     Year
                   </label>
                   <Input
-                    value={formData.year}
+                    value={formDataEn.year}
                     onChange={(e) =>
-                      setFormData({ ...formData, year: e.target.value })
+                      setFormDataEn({ ...formDataEn, year: e.target.value })
                     }
                     placeholder="e.g., 2024"
                     required
@@ -354,10 +414,10 @@ const AdminProjects: React.FC = () => {
                     Category
                   </label>
                   <select
-                    value={formData.category}
+                    value={formDataEn.category}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
+                      setFormDataEn({
+                        ...formDataEn,
                         category: e.target.value as any,
                       })
                     }
@@ -377,9 +437,9 @@ const AdminProjects: React.FC = () => {
                   Role
                 </label>
                 <Input
-                  value={formData.role}
+                  value={formDataEn.role}
                   onChange={(e) =>
-                    setFormData({ ...formData, role: e.target.value })
+                    setFormDataEn({ ...formDataEn, role: e.target.value })
                   }
                   placeholder="e.g., Frontend Developer"
                   required
@@ -387,19 +447,40 @@ const AdminProjects: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">
-                  Description
-                </label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  rows={4}
-                  required
-                  className="bg-slate-900 border-slate-700 text-white resize-none"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Description (EN)
+                  </label>
+                  <Textarea
+                    value={formDataEn.description}
+                    onChange={(e) =>
+                      setFormDataEn({
+                        ...formDataEn,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={4}
+                    required
+                    className="bg-slate-900 border-slate-700 text-white resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Description (SV)
+                  </label>
+                  <Textarea
+                    value={formDataSv.description}
+                    onChange={(e) =>
+                      setFormDataSv({
+                        ...formDataSv,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={4}
+                    className="bg-slate-900 border-slate-700 text-white resize-none"
+                  />
+                </div>
               </div>
 
               <div>
@@ -425,7 +506,7 @@ const AdminProjects: React.FC = () => {
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {formData.technologies?.map((tech, idx) => (
+                  {formDataEn.technologies?.map((tech, idx) => (
                     <div
                       key={idx}
                       className="bg-slate-700 text-white px-3 py-1 rounded-md flex items-center gap-2"

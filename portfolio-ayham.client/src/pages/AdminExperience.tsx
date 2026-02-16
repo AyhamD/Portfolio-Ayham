@@ -28,7 +28,14 @@ const AdminExperience: React.FC = () => {
   const [editingExperience, setEditingExperience] =
     useState<experienceProps | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<Partial<experienceProps>>({
+  const [formDataEn, setFormDataEn] = useState<Partial<experienceProps>>({
+    company: "",
+    position: "",
+    startDate: "",
+    endDate: "",
+    description: "",
+  });
+  const [formDataSv, setFormDataSv] = useState<Partial<experienceProps>>({
     company: "",
     position: "",
     startDate: "",
@@ -45,7 +52,7 @@ const AdminExperience: React.FC = () => {
 
   const loadExperiences = async () => {
     try {
-      const res = await contentAPI.getExperience();
+      const res = await contentAPI.getExperience("en");
       const data = Array.isArray(res.data) ? res.data : [];
       // sort by order so drag-and-drop starts from current ordering
       const sorted = data
@@ -67,7 +74,7 @@ const AdminExperience: React.FC = () => {
     try {
       await Promise.all(
         orderedItems.map((exp, index) => {
-          const updatedExp = { ...exp, order: index };
+          const updatedExp = { ...exp, order: index, language: "en" };
           return contentAPI.updateExperience(exp.id!, updatedExp);
         }),
       );
@@ -104,16 +111,50 @@ const AdminExperience: React.FC = () => {
     e.preventDefault();
 
     try {
+      const basePayloadEn = {
+        company: formDataEn.company || "",
+        position: formDataEn.position || "",
+        startDate: formDataEn.startDate || "",
+        endDate: formDataEn.endDate || "",
+        description: formDataEn.description || "",
+      };
+
       if (editingExperience) {
-        await contentAPI.updateExperience(editingExperience.id!, formData);
+        // Update EN description and base fields
+        await contentAPI.updateExperience(editingExperience.id!, {
+          ...basePayloadEn,
+          language: "en",
+        });
+
+        // Update SV description if provided
+        if (formDataSv.description && formDataSv.description.trim().length > 0) {
+          await contentAPI.updateExperience(editingExperience.id!, {
+            ...basePayloadEn,
+            description: formDataSv.description,
+            language: "sv",
+          });
+        }
+
         toast({
           title: "Success!",
           description: "Experience updated successfully.",
         });
       } else {
-        await contentAPI.createExperience(
-          formData as Omit<experienceProps, "id">,
-        );
+        // Create EN version first
+        const created = await contentAPI.createExperience({
+          ...(basePayloadEn as Omit<experienceProps, "id">),
+          language: "en",
+        });
+
+        // Then store SV description on the same entry if present
+        if (formDataSv.description && formDataSv.description.trim().length > 0) {
+          await contentAPI.updateExperience(created.data.id!, {
+            ...basePayloadEn,
+            description: formDataSv.description,
+            language: "sv",
+          });
+        }
+
         toast({
           title: "Success!",
           description: "Experience created successfully.",
@@ -133,10 +174,17 @@ const AdminExperience: React.FC = () => {
 
   const handleEdit = (experience: experienceProps) => {
     setEditingExperience(experience);
-    setFormData({
+    setFormDataEn({
       ...experience,
       startDate: formatDateISOToYMD(experience.startDate),
       endDate: experience.endDate ? formatDateISOToYMD(experience.endDate) : "",
+    });
+    setFormDataSv({
+      company: experience.company,
+      position: experience.position,
+      startDate: formatDateISOToYMD(experience.startDate),
+      endDate: experience.endDate ? formatDateISOToYMD(experience.endDate) : "",
+      description: "",
     });
     setShowForm(true);
   };
@@ -185,7 +233,14 @@ const AdminExperience: React.FC = () => {
   };
 
   const resetForm = () => {
-    setFormData({
+    setFormDataEn({
+      company: "",
+      position: "",
+      startDate: "",
+      endDate: "",
+      description: "",
+    });
+    setFormDataSv({
       company: "",
       position: "",
       startDate: "",
@@ -293,9 +348,9 @@ const AdminExperience: React.FC = () => {
                     Company
                   </label>
                   <Input
-                    value={formData.company}
+                    value={formDataEn.company}
                     onChange={(e) =>
-                      setFormData({ ...formData, company: e.target.value })
+                      setFormDataEn({ ...formDataEn, company: e.target.value })
                     }
                     required
                     className="bg-slate-900 border-slate-700 text-white"
@@ -306,9 +361,9 @@ const AdminExperience: React.FC = () => {
                     position
                   </label>
                   <Input
-                    value={formData.position}
+                    value={formDataEn.position}
                     onChange={(e) =>
-                      setFormData({ ...formData, position: e.target.value })
+                      setFormDataEn({ ...formDataEn, position: e.target.value })
                     }
                     required
                     className="bg-slate-900 border-slate-700 text-white"
@@ -319,36 +374,57 @@ const AdminExperience: React.FC = () => {
               <div className="flex justify-between gap-5">
                 <DatePicker
                   label="Start Date"
-                  value={formatDateISOToYMD(formData.startDate as string)}
+                  value={formatDateISOToYMD(formDataEn.startDate as string)}
                   onChange={(e: string) =>
-                    setFormData({ ...formData, startDate: e })
+                    setFormDataEn({ ...formDataEn, startDate: e })
                   }
                 />
                 <DatePicker
                   label="End Date (leave empty if current)"
-                  value={formatDateISOToYMD(formData.endDate as string)}
+                  value={formatDateISOToYMD(formDataEn.endDate as string)}
                   onChange={(e: string) =>
-                    setFormData({
-                      ...formData,
+                    setFormDataEn({
+                      ...formDataEn,
                       endDate: e || undefined,
                     })
                   }
                 />
               </div>
 
-              <div>
-                <label className="text-slate-300 text-sm font-medium mb-2 block">
-                  Description
-                </label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  rows={4}
-                  required
-                  className="bg-slate-900 border-slate-700 text-white resize-none"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Description (EN)
+                  </label>
+                  <Textarea
+                    value={formDataEn.description}
+                    onChange={(e) =>
+                      setFormDataEn({
+                        ...formDataEn,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={4}
+                    required
+                    className="bg-slate-900 border-slate-700 text-white resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-slate-300 text-sm font-medium mb-2 block">
+                    Description (SV)
+                  </label>
+                  <Textarea
+                    value={formDataSv.description}
+                    onChange={(e) =>
+                      setFormDataSv({
+                        ...formDataSv,
+                        description: e.target.value,
+                      })
+                    }
+                    rows={4}
+                    className="bg-slate-900 border-slate-700 text-white resize-none"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2 justify-end">

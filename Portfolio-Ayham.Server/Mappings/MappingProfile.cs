@@ -24,15 +24,19 @@ namespace Portfolio_Ayham.Server.Mappings
             CreateMap<Language, LanguageDto>().ReverseMap();
 
             // Education mappings
-            CreateMap<Education, EducationDtos>();
-            CreateMap<CreateEducationDto, Education>();
+            CreateMap<Education, EducationDtos>()
+                .ForMember(dest => dest.Description, opt => opt.Ignore());
+            CreateMap<CreateEducationDto, Education>()
+                .ForMember(dest => dest.Description, opt => opt.Ignore());
 
             // Experience mappings
-            CreateMap<Experience, ExperienceDtos>();
+                CreateMap<Experience, ExperienceDtos>()
+                    .ForMember(dest => dest.Description, opt => opt.Ignore());
             CreateMap<CreateExperienceDto, Experience>()
                 // Dates are provided as strings in the DTO and parsed manually in the service
-                .ForMember(dest => dest.StartDate, opt => opt.Ignore())
-                .ForMember(dest => dest.EndDate, opt => opt.Ignore());
+                    .ForMember(dest => dest.StartDate, opt => opt.Ignore())
+                    .ForMember(dest => dest.EndDate, opt => opt.Ignore())
+                    .ForMember(dest => dest.Description, opt => opt.Ignore());
 
             CreateMap<Personal, PersonalDtos>();
             CreateMap<CreatePersonalDto, Personal>();
@@ -42,8 +46,10 @@ namespace Portfolio_Ayham.Server.Mappings
             CreateMap<CreateSkillDto, Skill>();
 
             // Project mappings
-            CreateMap<Project, ProjectDtos>();
-            CreateMap<CreateProjectDto, Project>();
+            CreateMap<Project, ProjectDtos>()
+                .ForMember(dest => dest.Description, opt => opt.Ignore());
+            CreateMap<CreateProjectDto, Project>()
+                .ForMember(dest => dest.Description, opt => opt.Ignore());
         }
     }
 }

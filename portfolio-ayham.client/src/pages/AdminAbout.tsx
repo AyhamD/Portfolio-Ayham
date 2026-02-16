@@ -32,7 +32,8 @@ export const AdminAbout = () => {
       const [aboutEnRes, aboutSvRes, personalRes] = await Promise.all([
         contentAPI.getAbout("en"),
         contentAPI.getAbout("sv"),
-        contentAPI.getPersonal(),
+        contentAPI.getPersonal("en"),
+        contentAPI.getPersonal("sv"),
       ]);
       setAboutData(aboutEnRes.data);
       setAboutSummarySv(aboutSvRes.data.summary ?? "");
@@ -64,6 +65,16 @@ export const AdminAbout = () => {
         }),
 
         contentAPI.updatePersonal({
+          language: "en",
+          name: personalData?.name,
+          title: personalData?.title,
+          email: personalData?.email,
+          location: personalData?.location,
+          tagline: personalData?.tagline,
+          cvUrl: personalData?.cvUrl,
+        }),
+        contentAPI.updatePersonal({
+          language: "sv",
           name: personalData?.name,
           title: personalData?.title,
           email: personalData?.email,

@@ -3,6 +3,7 @@ using portfolio.Server.PortfolioBackend.Core.Dto;
 using portfolio.Server.PortfolioBackend.Core.Interfaces;
 using portfolio.Server.PortfolioBackend.Core.Models;
 using portfolio.Server.PortfolioBackend.Core.Services.Interfaces;
+using Portfolio_Ayham.Server.PortfolioBackend.Core.languageHelper;
 
 namespace portfolio.Server.PortfolioBackend.Core.Services
 {
@@ -10,15 +11,23 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
     {
         private readonly IExperienceRepository _experienceRepository;
         private readonly IMapper _mapper;
+        private readonly LanguageHelper _languageHelper;
 
-        public ExperienceService(IExperienceRepository experienceRepository, IMapper mapper)
+        public ExperienceService(IExperienceRepository experienceRepository, IMapper mapper, LanguageHelper languageHelper)
         {
             _experienceRepository = experienceRepository;
             _mapper = mapper;
+            _languageHelper = languageHelper;
         }
         public async Task<ExperienceDtos> CreateExperienceAsync(CreateExperienceDto createExperienceDto)
         {
             var experience = _mapper.Map<Experience>(createExperienceDto);
+
+            // Initialize description dictionary for the provided language
+            experience.Description = new Dictionary<string, string>
+            {
+                { createExperienceDto.Language ?? "en", createExperienceDto.Description ?? string.Empty }
+            };
 
             // Parse dates from string DTO fields
             if (!DateTime.TryParse(createExperienceDto.StartDate, out var startDate))
@@ -48,7 +57,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
             experience.CreatedAt = DateTime.UtcNow;
             experience.UpdatedAt = null;
             var createdExperience = await _experienceRepository.AddAsync(experience);
-            return _mapper.Map<ExperienceDtos>(createdExperience);
+            return MapExperienceToDto(createdExperience, createExperienceDto.Language);
         }
 
         public async Task<bool> DeleteExperienceAsync(string id)
@@ -72,7 +81,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
             return _mapper.Map<ExperienceDtos>(experience);
         }
 
-        public async Task<IEnumerable<ExperienceDtos>> GetExperiencesByUserIdAsync(string userId)
+        public async Task<IEnumerable<ExperienceDtos>> GetExperiencesByUserIdAsync(string userId, string language = "en")
         {
             var experiences = await _experienceRepository.GetByUserIdAsync(userId);
             if (experiences == null || !experiences.Any())
@@ -81,7 +90,9 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
                 return Enumerable.Empty<ExperienceDtos>();
             }
 
-            return _mapper.Map<IEnumerable<ExperienceDtos>>(experiences);
+            return experiences
+                .Select(e => MapExperienceToDto(e, language))
+                .OrderBy(e => e.Order);
         }
 
         public async Task<bool> UpdateExperienceAsync(string id, CreateExperienceDto updateExperienceDto)
@@ -118,8 +129,24 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
 
             existingExperience.UpdatedAt = DateTime.UtcNow;
             _mapper.Map(updateExperienceDto, existingExperience);
+
+            if (existingExperience.Description == null)
+            {
+                existingExperience.Description = new Dictionary<string, string>();
+            }
+
+            var languageKey = updateExperienceDto.Language ?? "en";
+            existingExperience.Description[languageKey] = updateExperienceDto.Description ?? string.Empty;
             var updated = await _experienceRepository.UpdateAsync(existingExperience);
             return true;
+        }
+
+        private ExperienceDtos MapExperienceToDto(Experience experience, string? language)
+        {
+            var dto = _mapper.Map<ExperienceDtos>(experience);
+            var lang = string.IsNullOrWhiteSpace(language) ? "en" : language;
+            dto.Description = _languageHelper.GetString(experience.Description, lang);
+            return dto;
         }
     }
 }

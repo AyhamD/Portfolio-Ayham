@@ -12,7 +12,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Models
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public bool IsCurrent { get; set; } = false;
-        public string Description { get; set; } = string.Empty;
+        public Dictionary<string, string> Description { get; set; } = new();
         public List<string> Technologies { get; set; } = new();
     }
 }

@@ -19,6 +19,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Dto
     public class CreateProjectDto
     {
         public string UserId { get; set; } = string.Empty;
+        public string Language { get; set; } = "en";
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Client { get; set; } = string.Empty;

@@ -19,6 +19,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Dto
     {
         // UserId is populated server-side from the authenticated user
         public string UserId { get; set; } = string.Empty;
+        public string Language { get; set; } = "en";
         public string Company { get; set; } = string.Empty;
         public string Position { get; set; } = string.Empty;
         public string Period { get; set; } = string.Empty;

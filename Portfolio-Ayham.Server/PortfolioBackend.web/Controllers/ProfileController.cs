@@ -122,12 +122,12 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
 
         [AllowAnonymous]
         [HttpGet("education")]
-        public async Task<ActionResult<AboutDtos>> GetEducation()
+        public async Task<ActionResult<AboutDtos>> GetEducation([FromQuery] string? lang = "en")
         {
             try
             {
                 var ownerUserId = GetPortfolioOwnerUserId();
-                var education = await _educationService.GetEducationsByUserIdAsync(ownerUserId);
+            var education = await _educationService.GetEducationsByUserIdAsync(ownerUserId, lang ?? "en");
                 return Ok(education);
             }
             catch (NotFoundException ex)
@@ -202,12 +202,12 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
 
         [AllowAnonymous]
         [HttpGet("experience")]
-        public async Task<ActionResult<AboutDtos>> GetExperience()
+        public async Task<ActionResult<AboutDtos>> GetExperience([FromQuery] string? lang = "en")
         {
             try
             {
                 var ownerUserId = GetPortfolioOwnerUserId();
-                var experience = await _experienceService.GetExperiencesByUserIdAsync(ownerUserId);
+            var experience = await _experienceService.GetExperiencesByUserIdAsync(ownerUserId, lang ?? "en");
                 return Ok(experience);
             }
             catch (NotFoundException ex)
@@ -282,12 +282,12 @@ namespace portfolio.Server.PortfolioBackend.web.Controllers
 
         [AllowAnonymous]
         [HttpGet("projects")]
-        public async Task<ActionResult<AboutDtos>> GetProjects()
+        public async Task<ActionResult<AboutDtos>> GetProjects([FromQuery] string? lang = "en")
         {
             try
             {
                 var ownerUserId = GetPortfolioOwnerUserId();
-                var projects = await _projectService.GetProjectsByUserIdAsync(ownerUserId);
+            var projects = await _projectService.GetProjectsByUserIdAsync(ownerUserId, lang ?? "en");
                 return Ok(projects);
             }
             catch (NotFoundException ex)

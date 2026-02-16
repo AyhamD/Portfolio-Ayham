@@ -4,7 +4,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Services.Interfaces
 {
     public interface IExperienceService
     {
-        Task<IEnumerable<ExperienceDtos>> GetExperiencesByUserIdAsync(string userId);
+        Task<IEnumerable<ExperienceDtos>> GetExperiencesByUserIdAsync(string userId, string language = "en");
         Task<ExperienceDtos> GetExperienceByIdAsync(string experienceId);
 
         Task<ExperienceDtos> CreateExperienceAsync(CreateExperienceDto createExperienceDto);

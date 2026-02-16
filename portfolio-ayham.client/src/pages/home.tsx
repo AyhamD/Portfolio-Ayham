@@ -18,7 +18,7 @@ import type {
   projectProps,
   TechnicalSkills,
 } from "../interface/interfaces";
-import i18n from "../i18n";
+import { useTranslation } from "react-i18next";
 
 export const HomePage = () => {
   const [aboutData, setAboutData] = useState<aboutProps | null>(null);
@@ -31,8 +31,10 @@ export const HomePage = () => {
   const [educationData, setEducationData] = useState<educationProps[] | null>(
     null,
   );
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language || "en";
+
   useEffect(() => {
-    console.log(i18n.language);
     const loadData = async () => {
       try {
         const [
@@ -43,13 +45,14 @@ export const HomePage = () => {
           experienceRes,
           educationRes,
         ] = await Promise.all([
-          contentAPI.getAbout(i18n.language || "en"),
-          contentAPI.getPersonal(),
+          contentAPI.getAbout(currentLang),
+          contentAPI.getPersonal(currentLang),
           contentAPI.getSkills(),
-          contentAPI.getProjects(),
-          contentAPI.getExperience(),
-          contentAPI.getEducation(),
+          contentAPI.getProjects(currentLang),
+          contentAPI.getExperience(currentLang),
+          contentAPI.getEducation(currentLang),
         ]);
+
         setAboutData(aboutRes.data);
         setPersonalData(personalRes.data);
         setSkillsData(skillsRes.data);
@@ -60,8 +63,9 @@ export const HomePage = () => {
         console.error("Error loading data:", error);
       }
     };
+
     loadData();
-  }, [i18n.language]);
+  }, [currentLang]);
   return (
     <>
       <Header />

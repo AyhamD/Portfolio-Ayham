@@ -14,8 +14,8 @@ export const authAPI = {
 // Content API
 export const contentAPI = {
   // Personal
-  getPersonal: () => httpClient.get<personal>("/personal"),
-  updatePersonal: (data: Partial<personal>) =>
+  getPersonal: (language: string) => httpClient.get<personal>(`/personal?lang=${language}`),
+  updatePersonal: (data: Partial<personal> & { language: string }) =>
     httpClient.put<personal>("/personal", data),
 
   // About
@@ -25,31 +25,31 @@ export const contentAPI = {
     httpClient.post<aboutProps>("/Profile/about", data),
   
   // Skills
-  getSkills: () => httpClient.get<TechnicalSkills>("/Profile/Skills"),
-  updateSkills: (data: { skills: Record<string, string[]> }) =>
+  getSkills: () => httpClient.get<TechnicalSkills>(`/Profile/Skills`),
+  updateSkills: (data: { skills: Record<string, string[]>; language: string }) =>
     httpClient.post<TechnicalSkills>("/Profile/Skills", data),
 
   // Projects
-  getProjects: () => httpClient.get<projectProps[]>("/Profile/projects"),
-  createProject: (data: Omit<projectProps, "id">) =>
+  getProjects: (language: string) => httpClient.get<projectProps[]>(`/Profile/projects?lang=${language}`),
+  createProject: (data: Omit<projectProps, "id"> & { language: string }) =>
     httpClient.post<projectProps>("/Profile/projects", data),
-  updateProject: (id: string, data: Partial<projectProps>) =>
+  updateProject: (id: string, data: Partial<projectProps> & { language: string }) =>
     httpClient.put<projectProps>(`/Profile/projects/${id}`, data),
   deleteProject: (id: string) => httpClient.delete(`/Profile/projects/${id}`),
 
   // Experience
-  getExperience: () => httpClient.get<experienceProps[]>("/Profile/experience"),
-  createExperience: (data: Omit<experienceProps, "id">) =>
+  getExperience: (language: string) => httpClient.get<experienceProps[]>(`/Profile/experience?lang=${language}`),
+  createExperience: (data: Omit<experienceProps, "id"> & { language: string }) =>
     httpClient.post<experienceProps>("/Profile/experience", data),
-  updateExperience: (id: string, data: Partial<experienceProps>) =>
+  updateExperience: (id: string, data: Partial<experienceProps> & { language: string }) =>
     httpClient.put<experienceProps>(`/Profile/experience/${id}`, data),
   deleteExperience: (id: string) => httpClient.delete(`/Profile/experience/${id}`),
 
   // Education
-  getEducation: () => httpClient.get<educationProps[]>("/Profile/education"),
-  createEducation: (data: Omit<educationProps, "id">) =>
+  getEducation: (language: string) => httpClient.get<educationProps[]>(`/Profile/education?lang=${language}`),
+  createEducation: (data: Omit<educationProps, "id"> & { language: string }) =>
     httpClient.post<educationProps>("/Profile/education", data),
-  updateEducation: (id: string, data: Partial<educationProps>) =>
+  updateEducation: (id: string, data: Partial<educationProps> & { language: string }) =>
     httpClient.put<educationProps>(`/Profile/education/${id}`, data),
   deleteEducation: (id: string) =>
     httpClient.delete(`/Profile/education/${id}`),

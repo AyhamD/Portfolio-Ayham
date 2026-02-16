@@ -4,7 +4,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Services.Interfaces
 {
     public interface IProjectService
     {
-        Task<IEnumerable<ProjectDtos>> GetProjectsByUserIdAsync(string userId);
+        Task<IEnumerable<ProjectDtos>> GetProjectsByUserIdAsync(string userId, string language = "en");
         Task<ProjectDtos> GetProjectByIdAsync(string projectId);
         Task<ProjectDtos> CreateProjectAsync(CreateProjectDto createProjectDto);
         Task<bool> UpdateProjectAsync(string id, CreateProjectDto updateProjectDto);
