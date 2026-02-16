@@ -26,7 +26,7 @@ export const contentAPI = {
   
   // Skills
   getSkills: () => httpClient.get<TechnicalSkills>(`/Profile/Skills`),
-  updateSkills: (data: { skills: Record<string, string[]>; language: string }) =>
+  updateSkills: (data: { skills: Record<string, string[]> }) =>
     httpClient.post<TechnicalSkills>("/Profile/Skills", data),
 
   // Projects
