@@ -13,15 +13,20 @@ import { contentAPI } from "../services/authService";
 import type { educationProps } from "../interface/interfaces";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
+type AdminEducationItem = educationProps & {
+  degreeSv?: string;
+  descriptionSv?: string;
+};
+
 const AdminEducation: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [educations, setEducations] = useState<educationProps[]>([]);
+  const [educations, setEducations] = useState<AdminEducationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingEducation, setEditingEducation] =
-    useState<educationProps | null>(null);
+    useState<AdminEducationItem | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formDataEn, setFormDataEn] = useState<Partial<educationProps>>({
     degree: "",
@@ -46,8 +51,24 @@ const AdminEducation: React.FC = () => {
 
   const loadEducations = async () => {
     try {
-      const res = await contentAPI.getEducation("en");
-      setEducations(Array.isArray(res.data) ? res.data : []);
+      const [enRes, svRes] = await Promise.all([
+        contentAPI.getEducation("en"),
+        contentAPI.getEducation("sv"),
+      ]);
+
+      const enList = Array.isArray(enRes.data) ? enRes.data : [];
+      const svList = Array.isArray(svRes.data) ? svRes.data : [];
+
+      const merged: AdminEducationItem[] = enList.map((en) => {
+        const sv = svList.find((s) => s.id === en.id);
+        return {
+          ...en,
+          degreeSv: sv?.degree,
+          descriptionSv: sv?.description,
+        };
+      });
+
+      setEducations(merged);
     } catch (error) {
       toast({
         title: "Error",
@@ -136,16 +157,19 @@ const AdminEducation: React.FC = () => {
     }
   };
 
-  const handleEdit = (education: educationProps) => {
+  const handleEdit = (education: AdminEducationItem) => {
     setEditingEducation(education);
-    setFormDataEn(education);
-    // When editing we only know the current language (EN) from this list;
-    // SV description will be loaded lazily if needed later.
-    setFormDataSv({
+    setFormDataEn({
       degree: education.degree,
       school: education.school,
       period: education.period,
-      description: "",
+      description: education.description,
+    });
+    setFormDataSv({
+      degree: education.degreeSv || "",
+      school: education.school,
+      period: education.period,
+      description: education.descriptionSv || "",
     });
     setShowForm(true);
   };
@@ -222,7 +246,14 @@ const AdminEducation: React.FC = () => {
     await Promise.all(
       withOrder.map((item, index) => {
         if (!item.id) return Promise.resolve();
-        const updatedData = { ...item, order: index, language: "en" };
+        const updatedData = {
+          school: item.school,
+          degree: item.degree,
+          period: item.period,
+          description: item.description,
+          order: index,
+          language: "en",
+        };
         return contentAPI.updateEducation(item.id, updatedData);
       }),
     );
