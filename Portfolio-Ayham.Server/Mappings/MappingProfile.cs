@@ -25,9 +25,11 @@ namespace Portfolio_Ayham.Server.Mappings
 
             // Education mappings
             CreateMap<Education, EducationDtos>()
-                .ForMember(dest => dest.Description, opt => opt.Ignore());
+                .ForMember(dest => dest.Description, opt => opt.Ignore())
+                .ForMember(dest => dest.Degree, opt => opt.Ignore());
             CreateMap<CreateEducationDto, Education>()
-                .ForMember(dest => dest.Description, opt => opt.Ignore());
+                .ForMember(dest => dest.Description, opt => opt.Ignore())
+                .ForMember(dest => dest.Degree, opt => opt.Ignore());
 
             // Experience mappings
                 CreateMap<Experience, ExperienceDtos>()

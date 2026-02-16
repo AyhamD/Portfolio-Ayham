@@ -77,14 +77,22 @@ const AdminEducation: React.FC = () => {
           language: "en",
         });
 
-        // Update SV description if provided
-        if (formDataSv.description && formDataSv.description.trim().length > 0) {
-          await contentAPI.updateEducation(editingEducation.id, {
-            ...basePayloadEn,
-            description: formDataSv.description,
-            language: "sv",
-          });
-        }
+        // Always update SV as well (fallback to EN when SV fields are empty)
+        const svDegree =
+          formDataSv.degree && formDataSv.degree.trim().length > 0
+            ? formDataSv.degree
+            : basePayloadEn.degree;
+        const svDescription =
+          formDataSv.description && formDataSv.description.trim().length > 0
+            ? formDataSv.description
+            : basePayloadEn.description;
+
+        await contentAPI.updateEducation(editingEducation.id, {
+          ...basePayloadEn,
+          degree: svDegree,
+          description: svDescription,
+          language: "sv",
+        });
       } else {
         // Create education with EN description first
         const created = await contentAPI.createEducation({
@@ -92,14 +100,22 @@ const AdminEducation: React.FC = () => {
           language: "en",
         });
 
-        // Then store SV description on the same entry if present
-        if (formDataSv.description && formDataSv.description.trim().length > 0) {
-          await contentAPI.updateEducation(created.data.id!, {
-            ...basePayloadEn,
-            description: formDataSv.description,
-            language: "sv",
-          });
-        }
+        // Then always store SV on the same entry (fallback to EN when SV fields are empty)
+        const svDegree =
+          formDataSv.degree && formDataSv.degree.trim().length > 0
+            ? formDataSv.degree
+            : basePayloadEn.degree;
+        const svDescription =
+          formDataSv.description && formDataSv.description.trim().length > 0
+            ? formDataSv.description
+            : basePayloadEn.description;
+
+        await contentAPI.updateEducation(created.data.id!, {
+          ...basePayloadEn,
+          degree: svDegree,
+          description: svDescription,
+          language: "sv",
+        });
       }
 
       toast({
@@ -301,7 +317,7 @@ const AdminEducation: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-slate-300 text-sm font-medium mb-2 block">
-                    Degree / Course
+                    Degree / Course (EN)
                   </label>
                   <Input
                     value={formDataEn.degree}
@@ -314,17 +330,30 @@ const AdminEducation: React.FC = () => {
                 </div>
                 <div>
                   <label className="text-slate-300 text-sm font-medium mb-2 block">
-                    School / Provider
+                    Degree / Course (SV)
                   </label>
                   <Input
-                    value={formDataEn.school}
+                    value={formDataSv.degree}
                     onChange={(e) =>
-                      setFormDataEn({ ...formDataEn, school: e.target.value })
+                      setFormDataSv({ ...formDataSv, degree: e.target.value })
                     }
-                    required
                     className="bg-slate-900 border-slate-700 text-white"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-slate-300 text-sm font-medium mb-2 block">
+                  School / Provider
+                </label>
+                <Input
+                  value={formDataEn.school}
+                  onChange={(e) =>
+                    setFormDataEn({ ...formDataEn, school: e.target.value })
+                  }
+                  required
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
               </div>
 
               <div>

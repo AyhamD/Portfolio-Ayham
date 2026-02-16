@@ -9,7 +9,6 @@ import Hero from "../components/Hero";
 import { Projects } from "../components/Project";
 import { Skills } from "../components/Skills";
 import { contentAPI } from "../services/authService";
-import { portfolioData } from "../data/mock";
 import type {
   aboutProps,
   educationProps,
@@ -69,55 +68,42 @@ export const HomePage = () => {
   return (
     <>
       <Header />
-      <Hero data={personalData ?? portfolioData.personal} />
+      <Hero data={personalData ?? {}} />
       <About
         data={{
-          summary: aboutData?.summary ?? portfolioData.about.summary,
-          highlights: aboutData?.highlights ?? portfolioData.about.highlights,
-          languages: aboutData?.languages ?? portfolioData.personal.languages,
-          location: personalData?.location ?? portfolioData.personal.location,
+          summary: aboutData?.summary ?? "",
+          highlights: aboutData?.highlights ?? [],
+          languages: aboutData?.languages ?? [],
+          location: personalData?.location ?? "",
         }}
       />
       <Skills
         skills={
           skillsData ?? {
-            skills: portfolioData.skills,
+            skills: {},
           }
         }
       />
       <Projects
         projects={
-          projectsData ??
-          portfolioData.projects.map((p) => ({
-            ...p,
-            id: String(p.id),
-            category: p.category as
-              | "enterprise"
-              | "fullstack"
-              | "backend"
-              | "frontend",
-          }))
+          projectsData ?? []
         }
       />
       <Experience
         experience={
           experienceData ??
-          portfolioData.experience.map((e) => ({
-            ...e,
-            id: String(e.id),
-            position: e.role,
-          }))
+          []
         }
       />
-      <Education education={educationData ?? [portfolioData.education]} />
+      <Education education={educationData ?? []} />
       <Contacts
         personal={{
-          email: personalData?.email ?? portfolioData.personal.email,
-          location: personalData?.location ?? portfolioData.personal.location,
+          email: personalData?.email ?? "",
+          location: personalData?.location ?? "",
           cvUrl: personalData?.cvUrl,
         }}
       />
-      <Footer email={personalData?.email ?? portfolioData.personal.email} />
+      <Footer email={personalData?.email ?? ""} />
     </>
   );
 };

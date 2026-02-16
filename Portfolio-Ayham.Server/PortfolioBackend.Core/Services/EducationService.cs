@@ -23,9 +23,14 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
         public async Task<EducationDtos> CreateEducationAsync(CreateEducationDto createEducationDto)
         {
             var education = _mapper.Map<Education>(createEducationDto);
+            var lang = createEducationDto.Language ?? "en";
             education.Description = new Dictionary<string, string>
             {
-                { createEducationDto.Language ?? "en", createEducationDto.Description ?? string.Empty }
+                { lang, createEducationDto.Description ?? string.Empty }
+            };
+            education.Degree = new Dictionary<string, string>
+            {
+                { lang, createEducationDto.Degree ?? string.Empty }
             };
             education.CreatedAt = DateTime.UtcNow;
             education.UpdatedAt = null;
@@ -72,13 +77,19 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
             }
             _mapper.Map(updateEducationDto, existingEducation);
 
+            var languageKey = updateEducationDto.Language ?? "en";
+
             if (existingEducation.Description == null)
             {
                 existingEducation.Description = new Dictionary<string, string>();
             }
-
-            var languageKey = updateEducationDto.Language ?? "en";
             existingEducation.Description[languageKey] = updateEducationDto.Description ?? string.Empty;
+
+            if (existingEducation.Degree == null)
+            {
+                existingEducation.Degree = new Dictionary<string, string>();
+            }
+            existingEducation.Degree[languageKey] = updateEducationDto.Degree ?? string.Empty;
             existingEducation.UpdatedAt = DateTime.UtcNow;
             var updated = await _educationRepository.UpdateAsync(existingEducation);
             return true;
@@ -89,6 +100,7 @@ namespace portfolio.Server.PortfolioBackend.Core.Services
             var dto = _mapper.Map<EducationDtos>(education);
             var lang = string.IsNullOrWhiteSpace(language) ? "en" : language;
             dto.Description = _languageHelper.GetString(education.Description, lang);
+            dto.Degree = _languageHelper.GetString(education.Degree, lang);
             return dto;
         }
     }
