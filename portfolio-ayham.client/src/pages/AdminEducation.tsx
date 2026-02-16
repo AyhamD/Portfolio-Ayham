@@ -175,7 +175,7 @@ const AdminEducation: React.FC = () => {
   };
 
   const [educationToDelete, setEducationToDelete] =
-    useState<educationProps | null>(null);
+    useState<AdminEducationItem | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDeleteClick = (education: educationProps) => {
