@@ -28,12 +28,12 @@ namespace Portfolio_Ayham.Server.PortfolioBackend.web.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<PersonalDtos>> GetPersonal()
+        public async Task<ActionResult<PersonalDtos>> GetPersonal([FromQuery] string? lang = "en")
         {
             try
             {
                 var ownerUserId = GetPortfolioOwnerUserId();
-                var personal = await _personalService.GetPersonalByUserIdAsync(ownerUserId);
+            var personal = await _personalService.GetPersonalByUserIdAsync(ownerUserId, lang ?? "en");
                 return Ok(personal);
             }
             catch (Exception ex)
