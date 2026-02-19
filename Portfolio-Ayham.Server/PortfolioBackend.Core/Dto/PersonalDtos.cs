@@ -19,7 +19,6 @@ namespace Portfolio_Ayham.Server.PortfolioBackend.Core.Dto
     public class CreatePersonalDto
     {
         public string UserId { get; set; } = string.Empty;
-        public string Language { get; set; } = "en";
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Phone { get; set; }

@@ -40,10 +40,8 @@ namespace Portfolio_Ayham.Server.Mappings
                     .ForMember(dest => dest.EndDate, opt => opt.Ignore())
                     .ForMember(dest => dest.Description, opt => opt.Ignore());
 
-            CreateMap<Personal, PersonalDtos>()
-                .ForMember(dest => dest.Tagline, opt => opt.Ignore());
-            CreateMap<CreatePersonalDto, Personal>()
-                .ForMember(dest => dest.Tagline, opt => opt.Ignore());
+            CreateMap<Personal, PersonalDtos>();
+            CreateMap<CreatePersonalDto, Personal>();
 
             // Skill mappings
             CreateMap<Skill, SkillDtos>();

@@ -12,22 +12,20 @@ import type { projectProps } from "../interface/interfaces";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import Modal from "../components/ui/modal";
 
-type AdminProjectItem = projectProps & {
-  descriptionSv?: string;
-};
-
 const AdminProjects: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [projects, setProjects] = useState<AdminProjectItem[]>([]);
+  const [projects, setProjects] = useState<projectProps[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingProject, setEditingProject] =
-    useState<AdminProjectItem | null>(null);
+  const [editingProject, setEditingProject] = useState<projectProps | null>(
+    null,
+  );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [projectToDelete, setProjectToDelete] =
-    useState<AdminProjectItem | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<projectProps | null>(
+    null,
+  );
   const [showForm, setShowForm] = useState(false);
   const [formDataEn, setFormDataEn] = useState<Partial<projectProps>>({
     title: "",
@@ -59,23 +57,9 @@ const AdminProjects: React.FC = () => {
 
   const loadProjects = async () => {
     try {
-      const [enRes, svRes] = await Promise.all([
-        contentAPI.getProjects("en"),
-        contentAPI.getProjects("sv"),
-      ]);
-
-      const enList = Array.isArray(enRes.data) ? enRes.data : [];
-      const svList = Array.isArray(svRes.data) ? svRes.data : [];
-
-      const merged: AdminProjectItem[] = enList.map((en) => {
-        const sv = svList.find((s) => s.id === en.id);
-        return {
-          ...en,
-          descriptionSv: sv?.description,
-        };
-      });
-
-      const sorted = merged
+      const res = await contentAPI.getProjects("en");
+      const data = Array.isArray(res.data) ? res.data : [];
+      const sorted = data
         .slice()
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setProjects(sorted);
@@ -111,17 +95,14 @@ const AdminProjects: React.FC = () => {
           language: "en",
         });
 
-        // Update SV description as well (fallback to EN when SV is empty)
-        const svDescription =
-          formDataSv.description && formDataSv.description.trim().length > 0
-            ? formDataSv.description
-            : basePayloadEn.description;
-
-        await contentAPI.updateProject(editingProject.id!, {
-          ...basePayloadEn,
-          description: svDescription,
-          language: "sv",
-        });
+        // Update SV description if provided
+        if (formDataSv.description && formDataSv.description.trim().length > 0) {
+          await contentAPI.updateProject(editingProject.id!, {
+            ...basePayloadEn,
+            description: formDataSv.description,
+            language: "sv",
+          });
+        }
 
         toast({
           title: "Success!",
@@ -134,17 +115,14 @@ const AdminProjects: React.FC = () => {
           language: "en",
         });
 
-        // Then add SV description on same project (fallback to EN when SV is empty)
-        const svDescription =
-          formDataSv.description && formDataSv.description.trim().length > 0
-            ? formDataSv.description
-            : basePayloadEn.description;
-
-        await contentAPI.updateProject(created.data.id!, {
-          ...basePayloadEn,
-          description: svDescription,
-          language: "sv",
-        });
+        // Then add SV description on same project if present
+        if (formDataSv.description && formDataSv.description.trim().length > 0) {
+          await contentAPI.updateProject(created.data.id!, {
+            ...basePayloadEn,
+            description: formDataSv.description,
+            language: "sv",
+          });
+        }
 
         toast({
           title: "Success!",
@@ -163,25 +141,12 @@ const AdminProjects: React.FC = () => {
     }
   };
 
-  const handleEdit = (project: AdminProjectItem) => {
+  const handleEdit = (project: projectProps) => {
     setEditingProject(project);
-    setFormDataEn({
-      title: project.title,
-      client: project.client,
-      year: project.year,
-      description: project.description,
-      role: project.role,
-      technologies: project.technologies,
-      category: project.category,
-    });
+    setFormDataEn(project);
     setFormDataSv({
-      title: project.title,
-      client: project.client,
-      year: project.year,
-      description: project.descriptionSv || "",
-      role: project.role,
-      technologies: project.technologies,
-      category: project.category,
+      ...project,
+      description: "",
     });
     setShowForm(true);
   };
@@ -292,17 +257,7 @@ const AdminProjects: React.FC = () => {
         withOrder.map((item, index) => {
           if (!item.id) return Promise.resolve();
 
-          const updatedData = {
-            title: item.title,
-            client: item.client,
-            year: item.year,
-            description: item.description,
-            role: item.role,
-            technologies: item.technologies,
-            category: item.category,
-            order: index,
-            language: "en",
-          };
+          const updatedData = { ...item, order: index, language: "en" };
           return contentAPI.updateProject(item.id, updatedData);
         }),
       );

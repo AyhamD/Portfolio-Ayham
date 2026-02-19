@@ -13,10 +13,8 @@ export const AdminAbout = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   const [aboutData, setAboutData] = useState<aboutProps | null>(null); // EN
-  const [aboutSummarySv, setAboutSummarySv] = useState<string>(""); // SV summary
-  const [aboutHighlightsSv, setAboutHighlightsSv] = useState<string[]>([]); // SV highlights
-  const [personalData, setPersonalData] = useState<personal | null>(null); // EN
-  const [personalTaglineSv, setPersonalTaglineSv] = useState<string>(""); // SV tagline
+  const [aboutSummarySv, setAboutSummarySv] = useState<string>(""); // SV summary only
+  const [personalData, setPersonalData] = useState<personal | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -31,20 +29,15 @@ export const AdminAbout = () => {
 
   const loadData = async () => {
     try {
-      const [aboutEnRes, aboutSvRes, personalEnRes, personalSvRes] =
-        await Promise.all([
-          contentAPI.getAbout("en"),
-          contentAPI.getAbout("sv"),
-          contentAPI.getPersonal("en"),
-          contentAPI.getPersonal("sv"),
-        ]);
-
+      const [aboutEnRes, aboutSvRes, personalRes] = await Promise.all([
+        contentAPI.getAbout("en"),
+        contentAPI.getAbout("sv"),
+        contentAPI.getPersonal("en"),
+        contentAPI.getPersonal("sv"),
+      ]);
       setAboutData(aboutEnRes.data);
       setAboutSummarySv(aboutSvRes.data.summary ?? "");
-      setAboutHighlightsSv(aboutSvRes.data.highlights ?? []);
-
-      setPersonalData(personalEnRes.data);
-      setPersonalTaglineSv(personalSvRes.data.tagline ?? "");
+      setPersonalData(personalRes.data);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -67,7 +60,7 @@ export const AdminAbout = () => {
         contentAPI.updateAbout({
           language: "sv",
           summary: aboutSummarySv,
-          highlights: aboutHighlightsSv,
+          highlights: aboutData?.highlights,
           languages: aboutData?.languages,
         }),
 
@@ -86,7 +79,7 @@ export const AdminAbout = () => {
           title: personalData?.title,
           email: personalData?.email,
           location: personalData?.location,
-          tagline: personalTaglineSv,
+          tagline: personalData?.tagline,
           cvUrl: personalData?.cvUrl,
         }),
       ]);
@@ -250,23 +243,13 @@ export const AdminAbout = () => {
             </div>
             <div>
               <label className="text-slate-300 text-sm font-medium mb-2 block">
-                Tagline (EN)
+                Tagline
               </label>
               <Input
                 value={personalData?.tagline}
                 onChange={(e) =>
                   setPersonalData({ ...personalData, tagline: e.target.value })
                 }
-                className="bg-slate-900 border-slate-700 text-white"
-              />
-            </div>
-            <div>
-              <label className="text-slate-300 text-sm font-medium mb-2 block">
-                Tagline (SV)
-              </label>
-              <Input
-                value={personalTaglineSv}
-                onChange={(e) => setPersonalTaglineSv(e.target.value)}
                 className="bg-slate-900 border-slate-700 text-white"
               />
             </div>
@@ -332,10 +315,10 @@ export const AdminAbout = () => {
           </Card>
         </div>
 
-        {/* Highlights EN */}
+        {/* Highlights */}
         <Card className="bg-slate-800/50 border-slate-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Highlights (EN)</h2>
+            <h2 className="text-xl font-bold text-white">Highlights</h2>
             <Button
               onClick={addHighlight}
               size="sm"
@@ -356,51 +339,6 @@ export const AdminAbout = () => {
                 />
                 <Button
                   onClick={() => removeHighlight(index)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Highlights SV */}
-        <Card className="bg-slate-800/50 border-slate-700 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Highlights (SV)</h2>
-            <Button
-              onClick={() =>
-                setAboutHighlightsSv([...(aboutHighlightsSv ?? []), ""])
-              }
-              size="sm"
-              className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Highlight
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {aboutHighlightsSv.map((highlight, index) => (
-              <div key={index} className="flex gap-2">
-                <Input
-                  value={highlight}
-                  onChange={(e) => {
-                    const newHighlights = [...aboutHighlightsSv];
-                    newHighlights[index] = e.target.value;
-                    setAboutHighlightsSv(newHighlights);
-                  }}
-                  placeholder="Enter a highlight (SV)"
-                  className="bg-slate-900 border-slate-700 text-white flex-1"
-                />
-                <Button
-                  onClick={() => {
-                    const newHighlights = [...aboutHighlightsSv];
-                    newHighlights.splice(index, 1);
-                    setAboutHighlightsSv(newHighlights);
-                  }}
                   variant="ghost"
                   size="sm"
                   className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
