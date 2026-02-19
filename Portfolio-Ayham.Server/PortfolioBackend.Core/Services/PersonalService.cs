@@ -47,7 +47,8 @@ namespace Portfolio_Ayham.Server.PortfolioBackend.Core.Services
                         Location = "",
                         Title = "",
                         Summary = "",
-                        Tagline = new Dictionary<string, string>(),
+                        Tagline = string.Empty,
+                        Taglines = new Dictionary<string, string>(),
                     };
 
                     await _personalRepository.AddAsync(personal);
@@ -72,23 +73,29 @@ namespace Portfolio_Ayham.Server.PortfolioBackend.Core.Services
                     // Create new personal info
                     personal = _mapper.Map<Personal>(updatePersonalDto);
                     personal.UserId = userId;
-                    personal.Tagline = new Dictionary<string, string>();
+                    personal.Taglines = new Dictionary<string, string>();
                     await _personalRepository.AddAsync(personal);
                 }
                 else
                 {
                     // Update existing personal info
                     _mapper.Map(updatePersonalDto, personal);
-                    if (personal.Tagline == null)
+                    if (personal.Taglines == null)
                     {
-                        personal.Tagline = new Dictionary<string, string>();
+                        personal.Taglines = new Dictionary<string, string>();
                     }
 
                     var langKey = string.IsNullOrWhiteSpace(updatePersonalDto.Language)
                         ? "en"
                         : updatePersonalDto.Language;
 
-                    personal.Tagline[langKey] = updatePersonalDto.Tagline ?? string.Empty;
+                    personal.Taglines[langKey] = updatePersonalDto.Tagline ?? string.Empty;
+
+                    // Keep legacy Tagline in sync with EN for backward compatibility
+                    if (langKey == "en")
+                    {
+                        personal.Tagline = updatePersonalDto.Tagline ?? string.Empty;
+                    }
                     personal.UpdatedAt = DateTime.UtcNow;
                     await _personalRepository.UpdateAsync(personal);
                 }
@@ -106,13 +113,14 @@ namespace Portfolio_Ayham.Server.PortfolioBackend.Core.Services
         {
             var dto = _mapper.Map<PersonalDtos>(personal);
 
-            if (personal.Tagline != null && personal.Tagline.Count > 0)
+            if (personal.Taglines != null && personal.Taglines.Count > 0)
             {
-                dto.Tagline = _languageHelper.GetString(personal.Tagline, language);
+                dto.Tagline = _languageHelper.GetString(personal.Taglines, language);
             }
             else
             {
-                dto.Tagline = string.Empty;
+                // Fallback to legacy single-language tagline if no per-language data exists
+                dto.Tagline = personal.Tagline ?? string.Empty;
             }
 
             return dto;

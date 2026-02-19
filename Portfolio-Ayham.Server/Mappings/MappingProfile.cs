@@ -43,7 +43,7 @@ namespace Portfolio_Ayham.Server.Mappings
             CreateMap<Personal, PersonalDtos>()
                 .ForMember(dest => dest.Tagline, opt => opt.Ignore());
             CreateMap<CreatePersonalDto, Personal>()
-                .ForMember(dest => dest.Tagline, opt => opt.Ignore());
+                .ForMember(dest => dest.Taglines, opt => opt.Ignore());
 
             // Skill mappings
             CreateMap<Skill, SkillDtos>();
