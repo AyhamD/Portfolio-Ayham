@@ -14,16 +14,15 @@ import type {
   educationProps,
   experienceProps,
   personal,
-  projectProps,
   TechnicalSkills,
 } from "../interface/interfaces";
 import { useTranslation } from "react-i18next";
+import { useProjects } from "../features/projects/hooks";
 
 export const HomePage = () => {
   const [aboutData, setAboutData] = useState<aboutProps | null>(null);
   const [personalData, setPersonalData] = useState<personal | null>(null);
   const [skillsData, setSkillsData] = useState<TechnicalSkills | null>(null);
-  const [projectsData, setProjectsData] = useState<projectProps[] | null>(null);
   const [experienceData, setExperienceData] = useState<
     experienceProps[] | null
   >(null);
@@ -32,6 +31,7 @@ export const HomePage = () => {
   );
   const { i18n } = useTranslation();
   const currentLang = i18n.language || "en";
+  const { projects: projectsData } = useProjects();
 
   useEffect(() => {
     const loadData = async () => {
@@ -40,14 +40,12 @@ export const HomePage = () => {
           aboutRes,
           personalRes,
           skillsRes,
-          projectsRes,
           experienceRes,
           educationRes,
         ] = await Promise.all([
           contentAPI.getAbout(currentLang),
           contentAPI.getPersonal(currentLang),
           contentAPI.getSkills(),
-          contentAPI.getProjects(currentLang),
           contentAPI.getExperience(currentLang),
           contentAPI.getEducation(currentLang),
         ]);
@@ -55,7 +53,6 @@ export const HomePage = () => {
         setAboutData(aboutRes.data);
         setPersonalData(personalRes.data);
         setSkillsData(skillsRes.data);
-        setProjectsData(projectsRes.data);
         setExperienceData(experienceRes.data);
         setEducationData(educationRes.data);
       } catch (error) {
