@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using PortfolioBackend.Application.UseCases.Auth;
+using PortfolioBackend.Application.UseCases.Projects;
+using PortfolioBackend.Application.UseCases.Skills;
 using PortfolioBackend.Infrastructure;
 using PortfolioBackend.Infrastructure.Middlewares;
 using PortfolioBackend.Infrastructure.Repositories;
@@ -42,12 +45,29 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<ISkillsRepository, SkillsRepository>();
 builder.Services.AddScoped<ITranslationRepository, TranslationRepository>();
 
-// Register Services
+// Register Services (legacy - can be removed once all controllers use Use Cases)
 builder.Services.AddScoped<IContactService, ContactService>();
-builder.Services.AddScoped<ILoginService, LoginService>();
-builder.Services.AddScoped<IProjectService, ProjectService>();
-builder.Services.AddScoped<ISkillsService, SkillsService>();
 builder.Services.AddScoped<ITranslationService, TranslationService>();
+
+// Register Use Cases - Projects
+builder.Services.AddScoped<GetAllProjectsUseCase>();
+builder.Services.AddScoped<GetProjectByIdUseCase>();
+builder.Services.AddScoped<CreateProjectUseCase>();
+builder.Services.AddScoped<UpdateProjectUseCase>();
+builder.Services.AddScoped<DeleteProjectUseCase>();
+
+// Register Use Cases - Skills
+builder.Services.AddScoped<GetAllSkillsUseCase>();
+builder.Services.AddScoped<GetSkillByIdUseCase>();
+builder.Services.AddScoped<CreateSkillUseCase>();
+builder.Services.AddScoped<DeleteSkillUseCase>();
+
+// Register Use Cases - Auth
+builder.Services.AddScoped<LoginUseCase>();
+builder.Services.AddScoped<RegisterUseCase>();
+builder.Services.AddScoped<LogoutUseCase>();
+builder.Services.AddScoped<GetCurrentUserUseCase>();
+builder.Services.AddScoped<DeleteUserUseCase>();
 
 
 builder.Services.AddIdentityCore<User>(options => { 

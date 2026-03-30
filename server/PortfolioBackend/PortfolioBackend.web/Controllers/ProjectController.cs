@@ -1,62 +1,66 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PortfolioBackend.Infrastructure;
+using PortfolioBackend.Application.UseCases.Projects;
 using PortfolioBackend.PortfolioBackend.Core.Dto;
 using PortfolioBackend.PortfolioBackend.Core.Models;
-using PortfolioBackend.PortfolioBackend.Core.Services;
 
 namespace PortfolioBackend.PortfolioBackend.web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProjectController : Controller
+    public class ProjectController : ControllerBase
     {
+        private readonly GetAllProjectsUseCase _getAllProjects;
+        private readonly GetProjectByIdUseCase _getProjectById;
+        private readonly CreateProjectUseCase _createProject;
+        private readonly UpdateProjectUseCase _updateProject;
+        private readonly DeleteProjectUseCase _deleteProject;
 
-        private readonly IProjectService _projectService;
-
-        public ProjectController(IProjectService projectService)
+        public ProjectController(
+            GetAllProjectsUseCase getAllProjects,
+            GetProjectByIdUseCase getProjectById,
+            CreateProjectUseCase createProject,
+            UpdateProjectUseCase updateProject,
+            DeleteProjectUseCase deleteProject)
         {
-            _projectService = projectService;
+            _getAllProjects = getAllProjects;
+            _getProjectById = getProjectById;
+            _createProject = createProject;
+            _updateProject = updateProject;
+            _deleteProject = deleteProject;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProjectDto>>> GetAllProject()
+        public async Task<ActionResult<IEnumerable<Project>>> GetAllProject()
         {
-            var projects = await _projectService.GetAllAsync();
-
+            var projects = await _getAllProjects.ExecuteAsync();
             return Ok(projects);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProjectDto>> GetProject(Guid id)
+        public async Task<ActionResult<Project>> GetProject(Guid id)
         {
-            var project = await _projectService.GetByIdAsync(id);
-
+            var project = await _getProjectById.ExecuteAsync(id);
             return Ok(project);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ProjectDto>> createProject(ProjectDto projectDto)
+        public async Task<ActionResult<Project>> CreateProject(ProjectDto projectDto)
         {
-            
-            var project = await _projectService.CreateAsync(projectDto);
-
-            return CreatedAtAction(nameof(GetProject), new { id = project.Id }, projectDto);
-
+            var project = await _createProject.ExecuteAsync(projectDto);
+            return CreatedAtAction(nameof(GetProject), new { id = project.Id }, project);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProject(Guid id, ProjectDto projectDto)
         {
-            await _projectService.UpdateAsync(id, projectDto);
+            await _updateProject.ExecuteAsync(new UpdateProjectRequest(id, projectDto));
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProject(Guid id)
         {
-            await _projectService.DeleteAsync(id);
-
+            await _deleteProject.ExecuteAsync(id);
             return NoContent();
         }
     }
