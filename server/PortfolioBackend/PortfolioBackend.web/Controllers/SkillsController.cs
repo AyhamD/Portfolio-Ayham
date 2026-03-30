@@ -1,78 +1,47 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PortfolioBackend.Infrastructure;
 using PortfolioBackend.PortfolioBackend.Core.Dto;
 using PortfolioBackend.PortfolioBackend.Core.Models;
+using PortfolioBackend.PortfolioBackend.Core.Services;
 
 namespace PortfolioBackend.PortfolioBackend.web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SkillsController : Controller
+    public class SkillsController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly ISkillsService _skillsService;
 
-        public SkillsController(DataContext context)
+        public SkillsController(ISkillsService skillsService)
         {
-            _context = context;
+            _skillsService = skillsService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Skill>>> GetSkills()
         {
-            return await _context.Skills
-                .Select(s => new Skill { SkillName = s.SkillName, Id = s.Id })
-                .ToListAsync();
+            var skills = await _skillsService.GetAllAsync();
+            return Ok(skills);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Skill>> GetSkill(int id)
         {
-            var skill = await _context.Skills.FindAsync(id);
-            if (skill == null)
-            {
-                return NotFound();
-            }
-            return skill;
+            var skill = await _skillsService.GetByIdAsync(id);
+            return Ok(skill);
         }
 
         [HttpPost]
-        public async Task<ActionResult<SkillDto>> CreateSkill(SkillDto skillDto)
+        public async Task<ActionResult<Skill>> CreateSkill(SkillDto skillDto)
         {
-            var existingSkill = await _context.Skills
-                .FirstOrDefaultAsync(s => s.SkillName.ToLower() == skillDto.SkillName.ToLower());
-
-            if (existingSkill != null)
-            {
-                return Conflict(new { message = "Skill already exists." });
-            }
-
-            var skill = new Skill { SkillName = skillDto.SkillName };
-            _context.Skills.Add(skill);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetSkill), new { id = skill.Id }, skillDto);
+            var skill = await _skillsService.CreateAsync(skillDto);
+            return CreatedAtAction(nameof(GetSkill), new { id = skill.Id }, skill);
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Skill>> DeleteSkill(int id)
+        public async Task<IActionResult> DeleteSkill(int id)
         {
-            try
-            {
-                var skill = await _context.Skills.FindAsync(id);
-                if (skill == null)
-                {
-                    return NotFound();
-                }
-                _context.Skills.Remove(skill);
-                await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _skillsService.DeleteAsync(id);
+            return NoContent();
         }
     }
 }

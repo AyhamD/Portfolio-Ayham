@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PortfolioBackend.PortfolioBackend.Core.Dto;
-using PortfolioBackend.PortfolioBackend.Core.Models;
 using PortfolioBackend.PortfolioBackend.Core.Services;
-using System.Diagnostics;
-using System.Security.Claims;
 
 namespace PortfolioBackend.PortfolioBackend.web.Controllers
 {
@@ -21,41 +17,46 @@ namespace PortfolioBackend.PortfolioBackend.web.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult> RegisterUser(User user)
+        public async Task<ActionResult<AuthResultDto>> RegisterUser([FromBody] RegisterDto registerDto)
         {
-            return await _loginService.RegisterUser(user);
+            var result = await _loginService.RegisterUserAsync(registerDto);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
-        [HttpPost("login")]
-        public async Task<ActionResult> loginUser([FromBody] LoginDto loginDto)
-        {
-            return await _loginService.loginUser(loginDto);
 
+        [HttpPost("login")]
+        public async Task<ActionResult<AuthResultDto>> LoginUser([FromBody] LoginDto loginDto)
+        {
+            var result = await _loginService.LoginUserAsync(loginDto);
+            return Ok(result);
         }
 
         [HttpGet("logout"), Authorize]
-        public async Task<ActionResult> LogoutUser()
+        public async Task<IActionResult> LogoutUser()
         {
-           return await _loginService.LogoutUser();
+            await _loginService.LogoutUserAsync();
+            return Ok(new { message = "Logged out successfully." });
         }
 
         [HttpGet("authenticated")]
-        public async Task<ActionResult> CheckUser()
+        public async Task<ActionResult<UserDto>> CheckUser()
         {
-            return await _loginService.CheckUser();
+            var user = await _loginService.GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { message = "User is not authenticated." });
+            }
+            return Ok(user);
         }
 
         [HttpDelete("delete")]
-        public async Task<ActionResult> DeleteUser(string userUd)
+        public async Task<IActionResult> DeleteUser(string userId)
         {
-            return await _loginService.DeleteUser(userUd);
+            await _loginService.DeleteUserAsync(userId);
+            return Ok(new { message = "User deleted successfully." });
         }
     }
 }
-
-//"id": "1",
-//  "userName": "Ayham",
-//  "normalizedUserName": "string",
-//  "email": "ayhamdarwish1993@gmail.com",
-//  "normalizedEmail": "string",
-//  "emailConfirmed": true,
-//  "passwordHash": "123456",

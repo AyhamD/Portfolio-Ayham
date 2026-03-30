@@ -1,8 +1,13 @@
-﻿namespace PortfolioBackend.PortfolioBackend.Core.Dto
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PortfolioBackend.PortfolioBackend.Core.Dto
 {
     public class CompetencyDto
     {
-        public string CompetencyName { get; set; }
+        [Required(ErrorMessage = "Competency name is required")]
+        [StringLength(100, MinimumLength = 1, ErrorMessage = "Competency name must be between 1 and 100 characters")]
+        public string CompetencyName { get; set; } = string.Empty;
+
         public Guid ProjectId { get; set; }
     }
 }

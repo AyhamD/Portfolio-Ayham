@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using PortfolioBackend.PortfolioBackend.Core.Dto;
+using PortfolioBackend.PortfolioBackend.Core.Exceptions;
 using PortfolioBackend.PortfolioBackend.Core.Models;
 using System.Security.Claims;
 
@@ -17,39 +17,44 @@ namespace PortfolioBackend.PortfolioBackend.Core.Services
             _userManager = userManager;
         }
 
-        public async Task<ActionResult> CheckUser()
+        public Task<UserDto?> GetCurrentUserAsync()
         {
             var isAuthenticated = _signInManager.Context.User.Identity.IsAuthenticated;
             if (!isAuthenticated)
             {
-                return new UnauthorizedObjectResult("User is not authenticated.");
+                return Task.FromResult<UserDto?>(null);
             }
 
             var userId = _signInManager.Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = _signInManager.Context.User.FindFirstValue(ClaimTypes.Name);
             var userEmail = _signInManager.Context.User.FindFirstValue(ClaimTypes.Email);
 
-            return new OkObjectResult((new { id = userId, name = userName, email = userEmail }));
+            var userDto = new UserDto
+            {
+                Id = userPrincipal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+                UserName = userPrincipal.FindFirstValue(ClaimTypes.Name) ?? userPrincipal.Identity?.Name,
+                Email = userPrincipal.FindFirstValue(ClaimTypes.Email)
+            };
+
+            return Task.FromResult<UserDto?>(userDto);
         }
 
-        public async Task<ActionResult> DeleteUser(string userId)
+        public async Task DeleteUserAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new NotFoundObjectResult("User not found.");
+                throw new UserNotFoundException(userId);
             }
 
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded)
             {
-                return new BadRequestObjectResult("Error deleting user.");
+                throw new InvalidOperationException("Error deleting user.");
             }
-
-            return new OkObjectResult("User deleted successfully.");
         }
 
-        public async Task<ActionResult> loginUser(LoginDto loginDto)
+        public async Task<AuthResultDto> LoginUserAsync(LoginDto loginDto)
         {
             var userNameOrEmail = loginDto.UsernameOrEmail;
             var password = loginDto.Password;
@@ -61,7 +66,7 @@ namespace PortfolioBackend.PortfolioBackend.Core.Services
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, password))
             {
-                return new UnauthorizedObjectResult("Check your login credentials and try again.");
+                throw new InvalidCredentialsException();
             }
 
             await _signInManager.SignInAsync(user, remember);
@@ -69,24 +74,59 @@ namespace PortfolioBackend.PortfolioBackend.Core.Services
             user.LastLogin = DateTime.Now;
             await _userManager.UpdateAsync(user);
 
-            return new OkObjectResult(new { message = "Login Successfully.", data = user });
+            return new AuthResultDto
+            {
+                Success = true,
+                Message = "Login successful.",
+                User = MapToUserDto(user)
+            };
         }
 
-        public async Task<ActionResult> LogoutUser()
+        public async Task LogoutUserAsync()
         {
-              await _signInManager.SignOutAsync();
-        return new OkObjectResult(new { message = "Logged out successfully." });
+            await _signInManager.SignOutAsync();
         }
 
-        public async Task<ActionResult> RegisterUser(User registerdUser)
+        public async Task<AuthResultDto> RegisterUserAsync(RegisterDto registerDto)
         {
-            var result = await _userManager.CreateAsync(registerdUser, registerdUser.PasswordHash);
+            var user = new User
+            {
+                UserName = registerDto.UserName,
+                Email = registerDto.Email,
+                Name = registerDto.Name ?? registerDto.UserName,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
             if (!result.Succeeded)
             {
-                return new BadRequestObjectResult(result);
+                return new AuthResultDto
+                {
+                    Success = false,
+                    Message = "Registration failed.",
+                    Errors = result.Errors.Select(e => e.Description)
+                };
             }
 
-            return new OkObjectResult(new { message = "Registered Successfully.", result });
+            return new AuthResultDto
+            {
+                Success = true,
+                Message = "Registration successful.",
+                User = MapToUserDto(user)
+            };
+        }
+
+        private static UserDto MapToUserDto(User user)
+        {
+            return new UserDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                UserName = user.UserName,
+                Email = user.Email,
+                IsAdmin = user.isAdmin,
+                LastLogin = user.LastLogin
+            };
         }
     }
 }

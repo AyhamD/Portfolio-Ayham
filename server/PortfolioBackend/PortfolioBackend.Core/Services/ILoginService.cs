@@ -1,15 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PortfolioBackend.PortfolioBackend.Core.Dto;
-using PortfolioBackend.PortfolioBackend.Core.Models;
+﻿using PortfolioBackend.PortfolioBackend.Core.Dto;
 
 namespace PortfolioBackend.PortfolioBackend.Core.Services
 {
     public interface ILoginService
     {
-        Task<ActionResult> RegisterUser(User user);
-        Task<ActionResult> loginUser([FromBody] LoginDto loginDto);
-        Task<ActionResult> LogoutUser();
-        Task<ActionResult> CheckUser();
-        Task<ActionResult> DeleteUser(string userUd);
+        Task<AuthResultDto> RegisterUserAsync(RegisterDto registerDto);
+        Task<AuthResultDto> LoginUserAsync(LoginDto loginDto);
+        Task LogoutUserAsync();
+        Task<UserDto?> GetCurrentUserAsync();
+        Task DeleteUserAsync(string userId);
     }
 }

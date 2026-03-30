@@ -18,10 +18,10 @@ namespace PortfolioBackend.PortfolioBackend.Core.Services
                 ProjectStartDate = projectDto.ProjectStartDate,
                 Role = projectDto.Role,
                 ProjectEndDate = projectDto.ProjectEndDate,
-                Competencies = projectDto.Competencies.Select(c => new Competency
+                Competencies = projectDto.Competencies?.Select(c => new Competency
                 {
                     CompetencyName = c.CompetencyName
-                }).ToList()
+                }).ToList() ?? new List<Competency>()
             };
 
             projectRepository.Insert(project);
@@ -33,7 +33,10 @@ namespace PortfolioBackend.PortfolioBackend.Core.Services
         public async Task DeleteAsync(Guid projectId)
         {
             var project = await projectRepository.GetByIdAsync(projectId);
-            if (project == null) throw new KeyNotFoundException("Project not found");
+            if (project == null)
+            {
+                throw new ProjectNotFoundException(projectId);
+            }
 
             projectRepository.Remove(project);
             await projectRepository.SaveChangesAsync();
@@ -62,7 +65,10 @@ namespace PortfolioBackend.PortfolioBackend.Core.Services
         public async Task<Project> GetByIdAsync(Guid projectId)
         {
             var project = await projectRepository.GetByIdAsync(projectId);
-            if (project == null) return null;
+            if (project == null)
+            {
+                throw new ProjectNotFoundException(projectId);
+            }
 
             return new Project
             {
@@ -84,7 +90,18 @@ namespace PortfolioBackend.PortfolioBackend.Core.Services
         public async Task UpdateAsync(Guid projectId, ProjectDto projectDto)
         {
             var project = await projectRepository.GetByIdAsync(projectId);
-            if (project == null) throw new KeyNotFoundException("Project not found");
+            if (project == null)
+            {
+                throw new ProjectNotFoundException(projectId);
+            }
+
+            // Update fields
+            project.ProjectName = projectDto.ProjectName;
+            project.Company = projectDto.Company;
+            project.Description = projectDto.Description;
+            project.ProjectStartDate = projectDto.ProjectStartDate;
+            project.ProjectEndDate = projectDto.ProjectEndDate;
+            project.Role = projectDto.Role;
 
             projectRepository.Update(project);
             await projectRepository.SaveChangesAsync();

@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PortfolioBackend.Infrastructure;
+using PortfolioBackend.PortfolioBackend.Core.Dto;
 using PortfolioBackend.PortfolioBackend.Core.Models;
-using System.Linq;
-using System.Threading.Tasks;
+using PortfolioBackend.PortfolioBackend.Core.Services;
 
 namespace PortfolioBackend.PortfolioBackend.web.Controllers
 {
@@ -11,88 +9,47 @@ namespace PortfolioBackend.PortfolioBackend.web.Controllers
     [ApiController]
     public class TranslationsController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly ITranslationService _translationService;
 
-        public TranslationsController(DataContext context)
+        public TranslationsController(ITranslationService translationService)
         {
-            _context = context;
+            _translationService = translationService;
         }
 
-        // GET: api/translations/{language}/{key}
         [HttpGet("{language}/{key}")]
-        public async Task<IActionResult> GetTranslationAsync(string language, string key)
+        public async Task<ActionResult<Translation>> GetTranslationAsync(string language, string key)
         {
-            var translation = await _context.Translations
-                    .FindAsync(new { language, key });
-
-            if (translation == null)
-            {
-                return NotFound();
-            }
-
+            var translation = await _translationService.GetByKeyAsync(language, key);
             return Ok(translation);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTranslationsAsync()
+        public async Task<ActionResult<IEnumerable<Translation>>> GetAllTranslationsAsync()
         {
-            var translations = await _context.Translations.ToListAsync();
+            var translations = await _translationService.GetAllAsync();
             return Ok(translations);
         }
 
-        // PUT: api/translations/{id}
-        [HttpPut("{key}")]
-        public async Task<IActionResult> UpdateTranslationAsync([FromBody] Translation translationUpdate)
+        [HttpPut("{language}/{key}")]
+        public async Task<IActionResult> UpdateTranslationAsync(string language, string key, [FromBody] TranslationDto translationDto)
         {
-            var translation = await _context.Translations.FindAsync(translationUpdate.Key);
-
-            if (translation == null)
-            {
-                return NotFound();
-            }
-
-            if (translationUpdate.Language != "sv" && translationUpdate.Language != "en")
-            {
-                return BadRequest("Language must be 'sv' or 'en'.");
-            }
-
-            translation.Language = translationUpdate.Language;
-            translation.Key = translationUpdate.Key;
-            translation.Value = translationUpdate.Value;
-
-            _context.Entry(translation).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
+            await _translationService.UpdateAsync(language, key, translationDto);
             return NoContent();
         }
 
-        // POST: api/translations
         [HttpPost]
-        public async Task<IActionResult> CreateTranslationAsync([FromBody] Translation newTranslation)
+        public async Task<ActionResult<Translation>> CreateTranslationAsync([FromBody] TranslationDto translationDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var translation = await _translationService.CreateAsync(translationDto);
+            return CreatedAtAction(nameof(GetTranslationAsync), 
+                new { language = translation.Language, key = translation.Key }, translation);
+        }
 
-            if (newTranslation.Language != "sv" && newTranslation.Language != "en")
-            {
-                return BadRequest("Language must be 'sv' or 'en'.");
-            }
-
-            var existingTranslation = await _context.Translations
-            .FindAsync(new { newTranslation.Language, newTranslation.Key });
-
-            if (existingTranslation != null)
-            {
-                return BadRequest("A translation with the same language and key already exists.");
-            }
-
-            _context.Translations.Add(newTranslation);
-            await _context.SaveChangesAsync();
-
-
-            return CreatedAtAction(nameof(GetTranslationAsync), new { language = newTranslation.Language, key = newTranslation.Key }, newTranslation);
+        [HttpDelete("{language}/{key}")]
+        public async Task<IActionResult> DeleteTranslationAsync(string language, string key)
+        {
+            await _translationService.DeleteAsync(language, key);
+            return NoContent();
         }
     }
 }

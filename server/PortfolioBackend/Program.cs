@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PortfolioBackend.Infrastructure;
+using PortfolioBackend.Infrastructure.Middlewares;
 using PortfolioBackend.Infrastructure.Repositories;
 using PortfolioBackend.PortfolioBackend.Core.Models;
 using PortfolioBackend.PortfolioBackend.Core.Repositories;
@@ -36,10 +37,17 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 });
 
+// Register Repositories
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<ISkillsRepository, SkillsRepository>();
+builder.Services.AddScoped<ITranslationRepository, TranslationRepository>();
+
+// Register Services
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
-builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<ISkillsService, SkillsService>();
+builder.Services.AddScoped<ITranslationService, TranslationService>();
 
 
 builder.Services.AddIdentityCore<User>(options => { 
@@ -67,6 +75,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Add global exception handler middleware
+app.UseGlobalExceptionHandler();
 
 app.MapIdentityApi<User>();
 
