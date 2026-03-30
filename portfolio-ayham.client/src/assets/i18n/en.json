@@ -1,0 +1,103 @@
+{
+  "welcome": "Welcome to Ayham Darwish Portfolio",
+  "header_text": "I'm a skilled full-stack developer with a passion for creating beautiful and functional web applications.",
+  "languages": {
+    "en": "English",
+    "sv": "Swedish"
+  },
+  "add_skill": "add Skill",
+  "project": "View Projects",
+  "about": "About me",
+  "contact": "Contact Me",
+  "my_project": "My project",
+  "working_project": "check out some of the projects I've worked on.",
+  "about_text": "I am a full-stack developer with a passion for building scalable and efficient web applications. With a background in computer science and years of experience in the tech industry, I have developed a strong foundation in both front-end and back-end technologies.",
+  "skills": "Skills",
+  "experience": "Experience",
+  "project_view": {
+    "customer_name": "Customer name",
+    "project_name": "Project name",
+    "project_date": "Date",
+    "project_competency": "competency",
+    "project_role": "Role",
+    "Frontend_developer": "Frontend developer"
+  },
+  "about_view": {
+    "experience_year": "3+ years as a full-stack developer",
+    "degree": "Bachelor's degree in Computer Science engineering",
+    "Sweco": "Working as a Software Developer at Sweco",
+    "epical": "Employed as a Software Developer at Epical.",
+    "devize": "Hired as a Software Developer at Devize.",
+    "skill_exist": "Skill are already exist",
+    "about": "About Me",
+    "languages": "Languages",
+    "location": "Location",
+    "availability": "Availability",
+    "working_at_sweco": "Currently working at Sweco"
+  },
+  "contact_view": {
+    "getInTouch": "Get in Touch",
+    "interestedInWorkingTogether": "Interested in working together? Fill out the form below or send me an email.",
+    "email": "Email",
+    "location": "Location",
+    "downloadCV": "Download CV",
+    "name": "Name",
+    "yourName": "Your Name",
+    "yourEmail": "Your Email",
+    "message": "Message",
+    "yourMessage": "Your Message",
+    "sendMessage": "Send Message",
+    "messageSent": "Message Sent",
+    "thankYouMessage": "Thank you for reaching out! I will get back to you soon.",
+    "cvDownload": "CV Download",
+    "cvDownloadSoon": "CV download will be available soon."
+  },
+  "education_view": {
+    "education": "Education",
+    "degree": "Bachelor's Degree in Computer Engineering",
+    "description": "Comprehensive education in computer engineering, data communication, and information systems. Foundation in full-stack development, system programming, and project management."
+  },
+  "experience_view": {
+    "experience": "Experience"
+  },
+  "system_developer_specializing": "System developer specializing in web and software solutions.",
+  "quick_links": "Quick Links",
+  "connect": "Connect",
+  "built_with": "Built with",
+  "and": "and",
+  "header": {
+    "about": "About me",
+    "project": "Projects",
+    "skills": "Skills",
+    "contact": "Contact me",
+    "experience_year": "Years of Experience",
+    "technologies": "Technologies",
+    "languages": "Languages",
+    "projects": "View Projects",
+    "contactMe": "Reach Out",
+    "myWork": "View My Work"
+  },
+  "hero_view": {
+    "title": "System Developer",
+    "tagline": "Building scalable web applications with modern technologies"
+  },
+  "projects": {
+    "featuredProjects": "Featured Projects",
+    "description": "A selection of projects showcasing my experience in full-stack, frontend, backend, and enterprise development.",
+    "role": "Role",
+    "noProjectsFound": "No projects found.",
+    "all": "All Projects",
+    "fullstack": "Full-Stack",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "enterprise": "Enterprise"
+  },
+  "skills_view": {
+    "title": "Skills",
+    "frontend": "Frontend",
+    "backend": "Backend",
+    "tools & platforms": "Tools & Platforms",
+    "methodologies": "Methodologies",
+    "design tools": "Design Tools"
+  }
+}
