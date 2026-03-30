@@ -19,21 +19,18 @@ namespace PortfolioBackend.PortfolioBackend.Core.Services
 
         public Task<UserDto?> GetCurrentUserAsync()
         {
-            var isAuthenticated = _signInManager.Context.User.Identity.IsAuthenticated;
+            var principal = _signInManager.Context?.User;
+            var isAuthenticated = principal?.Identity?.IsAuthenticated == true;
             if (!isAuthenticated)
             {
                 return Task.FromResult<UserDto?>(null);
             }
 
-            var userId = _signInManager.Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userName = _signInManager.Context.User.FindFirstValue(ClaimTypes.Name);
-            var userEmail = _signInManager.Context.User.FindFirstValue(ClaimTypes.Email);
-
             var userDto = new UserDto
             {
-                Id = userPrincipal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
-                UserName = userPrincipal.FindFirstValue(ClaimTypes.Name) ?? userPrincipal.Identity?.Name,
-                Email = userPrincipal.FindFirstValue(ClaimTypes.Email)
+                Id = principal!.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+                UserName = principal!.FindFirstValue(ClaimTypes.Name) ?? principal!.Identity?.Name,
+                Email = principal!.FindFirstValue(ClaimTypes.Email)
             };
 
             return Task.FromResult<UserDto?>(userDto);
